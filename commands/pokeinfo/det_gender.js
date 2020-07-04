@@ -2,8 +2,11 @@ module.exports = function det_gender(pokemon) {
 	// name: det_gender.js
 	// description: This function determines the gender of a new Pokémon.
 
+	// create gender ratio and gender variables
 	let gratio = [];
 	let gend = [];
+
+	// determine gender ratio from specified pokemon
 	switch(pokemon) {
 
 	case 'acafia':
@@ -839,8 +842,10 @@ module.exports = function det_gender(pokemon) {
 		break;
 	}
 
+	// randomize number between 1 and 100 for gender assignment
 	const GenderResult = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
 
+	// determine gender from randomized roll
 	switch (gratio) {
 
 	case 'male50':

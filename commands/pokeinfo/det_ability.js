@@ -5,6 +5,7 @@ module.exports = function det_ability(pokemon, abilityno) {
 	let ab_num = [];
 	let ability = [];
 
+	// If pokemon is new and an ability slot has not been assigned, randomize which ability pokemon will have
 	if (!abilityno.length) {
 		const abilitycoin = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
 		if (abilitycoin < 51) {
@@ -14,10 +15,12 @@ module.exports = function det_ability(pokemon, abilityno) {
 			ab_num = 2;
 		}
 	}
+	// Keep ability number assignment if pokemon is not new (hence, has evolved)
 	else {
 		ab_num = abilityno;
 	}
 
+	// Determine ability from pokemon and specified ability number
 	switch(pokemon) {
 
 	case 'acafia':
@@ -1260,5 +1263,7 @@ module.exports = function det_ability(pokemon, abilityno) {
 		else if (ab_num == 3) { ability = 'Levitate'; }
 		break;
 	}
+
+	// return object with ability number and ability
 	return { number: ab_num, name: ability };
 };

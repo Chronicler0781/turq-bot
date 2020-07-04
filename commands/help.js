@@ -4,6 +4,7 @@ module.exports = {
 
 	execute(message, args) {
 
+		// Send standard help message if no arguments specified
 		if (!args.length) {
 			message.channel.send(' >>> Hello, I am Turq-Bot, your friendly neighborhood bot with the purpose of assisting new trainers of New Logora with their Pokémon adventure needs! \
 				\nMy prefix on this server is the minus (-) key. To see explanations and examples of my commands, please type -help followed by the desired command name. \
@@ -15,6 +16,7 @@ module.exports = {
 				\n-user-info');
 		}
 		else {
+			// if there are arguments, post help document depending on which command is specified
 			switch(args[0]) {
 
 			case 'check':
@@ -55,7 +57,7 @@ module.exports = {
 							\nDescription: new command followed by profile, arguments 1-8, and then a user tag will create a new profile for the tagged user and generate a starter Pokémon in slot 1. \
 							\nComing soon: profile creation will generate a populated profile channel for the player, as well as a fresh adventure channel. \
 							\n\n__Example:__ \
-							\nUser: -new profile Turqy_Botswath 0 None Crocoal Fireboy Chronicler 26 Male @Turq-Bot \
+							\nUser: -new profile Turqy_Botswath 0 None Crocoal Fireboy Chronicler 26 Male Turq-Bot#8380 \
 							\nTurq-Bot: Profile successfully created for Turq-Bot.');
 				break;
 			}

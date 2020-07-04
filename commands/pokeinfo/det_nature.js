@@ -9,6 +9,7 @@ module.exports = function det_nature() {
 	// multipliers = [Attack, Defense, Sp.Att, Sp.Def, Speed]
 	let multipliers = [];
 
+	// Determine nature and resultant multipliers from randomized roll
 	switch(natureResult) {
 
 	case 0:
@@ -137,5 +138,6 @@ module.exports = function det_nature() {
 		break;
 	}
 
+	// return object with nature name and array of multiplier values
 	return { name: nature, mult: multipliers };
 };

@@ -2,11 +2,15 @@ module.exports = function movesets(pokemon, level, current_ms) {
 	// name: movesets.js
 	// description: This function creates or updates the known moves of a Pokémon at a given level.
 
+	// Create variables for moves and the levels they are learned at
 	let movelevels = [];
 	let moves = [];
+
+	// set new moveset to be the same as the old moveset if pokemon if pre-existing, otherwise array is empty
 	const new_ms = current_ms;
 	switch(pokemon) {
 
+	// set movelevels and moves depending on specified pokemon
 	case 'acafia':
 		movelevels = [1, 1, 6, 10, 15, 19, 24, 28, 33, 37, 42, 46, 51];
 		moves = ['Tackle', 'Growl', 'Razor Leaf', 'Horn Attack', 'Growth', 'Fury Attack',
@@ -70,11 +74,16 @@ module.exports = function movesets(pokemon, level, current_ms) {
 
 	}
 
+	// iterate through list of movelevels
 	for (let i = 0; i < movelevels.length; i++) {
+
+		// if pokemon level is greater than the move level, check if move is already known
 		if (level >= movelevels[i]) {
 			// eslint-disable-next-line no-empty
 			if (new_ms.includes(moves[i])) {
+			// do nothing if move is already known
 			}
+			// if move is not known, add new move to new moveset
 			else {
 				new_ms.push(moves[i]);
 			}
