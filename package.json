@@ -9,7 +9,9 @@
   "author": "Chronicler",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.6.1",
     "discord.js": "^12.2.0",
+    "merge-images": "^2.0.0",
     "mongodb": "^3.5.9"
   }
 }

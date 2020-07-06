@@ -46,6 +46,10 @@ bot.on('message', message =>{
 		bot.commands.get('check').execute(message, args);
 		break;
 
+	case 'embed':
+		bot.commands.get('embed').execute(Discord, message, args);
+		break;
+
 	case 'server':
 		bot.commands.get('server').execute(message);
 		break;
