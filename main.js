@@ -30,6 +30,10 @@ bot.on('message', message =>{
 
 	switch(command) {
 
+	case 'check':
+		bot.commands.get('check').execute(message, args);
+		break;
+
 	case 'dex':
 		bot.commands.get('dex').execute(message, args);
 		break;
@@ -39,28 +43,35 @@ bot.on('message', message =>{
 		break;
 
 	case 'new':
-		bot.commands.get('new').execute(message, args);
-		break;
-
-	case 'check':
-		bot.commands.get('check').execute(message, args);
-		break;
-
-	case 'embed':
-		bot.commands.get('embed').execute(Discord, message, args);
+		// check to see if user has the required staff roles needed to use the new command
+		if(message.member.roles.cache.some(role => role.name === 'Administrator') || message.member.roles.cache.some(role => role.name === 'RPG Mod')) {
+			// message.channel.send(`Member ${message.member.user.username} is recognized as an Administrator. A profile will be created.`);
+			bot.commands.get('new').execute(Discord, bot, message, args);
+		}
+		else {
+			message.channel.send(`>>> You do not have the required role(s) needed to use the '${command}' command.`);
+		}
 		break;
 
 	case 'server':
 		bot.commands.get('server').execute(message);
 		break;
 
+	case 'travel':
+		bot.commands.get('travel').execute(Discord, message, args);
+		break;
+
 	case 'user-info':
 		bot.commands.get('user-info').execute(message, args);
 		break;
-	
+
+	case 'wild':
+		bot.commands.get('wild').execute(Discord, message);
+		break;
+
 	// if no command found, return message
 	default:
-		message.channel.send(`The command, ${command}, is not recognized. Please check your spelling or enter '-help' for a full list of commands.`);
+		message.channel.send(`>>> The command, ${command}, is not recognized. Please check your spelling or enter '-help' for a full list of commands.`);
 		break;
 	}
 

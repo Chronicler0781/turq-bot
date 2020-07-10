@@ -72,6 +72,71 @@ module.exports = function movesets(pokemon, level, current_ms) {
 			'Maelstrom'];
 		break;
 
+	case 'auriole':
+		movelevels = [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41];
+		moves = ['Peck', 'Sand Attack', 'Astonish', 'Sing', 'Wing Attack', 'Charm',
+			'Mach Turn', 'Agility', 'Drill Peck', 'Me First', 'Frenzy Strike'];
+		break;
+
+	case 'icauriole':
+		movelevels = [1, 5, 9, 13, 17, 21, 27, 33, 39, 45, 51, 56];
+		moves = ['Peck', 'Sand Attack', 'Astonish', 'Sing', 'Wing Attack', 'Charm',
+			'Mach Turn', 'Agility', 'Drill Peck', 'Me First', 'Frenzy Strike', 'Brave Bird'];
+		break;
+
+	case 'dustley':
+		movelevels = [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45];
+		moves = ['Tackle', 'Sand Attack', 'Defense Curl', 'Bide', 'Bite', 'Cotton Spore',
+			'Dig', 'Hyper Fang', 'Cotton Guard', 'Rollout', 'Super Fang', 'Substitute'];
+		break;
+
+	case 'aculago':
+		movelevels = [1, 5, 9, 13, 17, 20, 24, 29, 35, 40, 44, 49, 53, 58];
+		moves = ['Tackle', 'Sand Attack', 'Defense Curl', 'Bide', 'Bite', 'Sand Tomb',
+			'Cotton Spore', 'Dig', 'Hyper Fang', 'Cotton Guard', 'Rollout', 'Super Fang',
+			'Substitute', 'Sandstorm'];
+		break;
+
+	case 'kizziff':
+		movelevels = [1, 1, 6, 9, 14, 17, 22, 25, 30, 33, 38, 41, 46, 49];
+		moves = ['Leech Life', 'Leer', 'Poison Sting', 'Para Needle', 'Sweet Kiss', 'Bug Bite',
+			'Shadow Sneak', 'Drain Life', 'Poison Fang', 'Slumber Fang', 'Toxic', 'Cross Poison',
+			'X-Scissor', 'Backstab'];
+		break;
+
+	case 'murgaz':
+		movelevels = [1, 1, 6, 9, 15, 18, 24, 27, 33, 36, 42, 45, 51, 54];
+		moves = ['Leech Life', 'Leer', 'Poison Sting', 'Para Needle', 'Sweet Kiss', 'Bug Bite',
+			'Shadow Sneak', 'Drain Life', 'Poison Fang', 'Slumber Fang', 'Toxic', 'Cross Poison',
+			'X-Scissor', 'Backstab'];
+		break;
+
+	case 'chaszin':
+		movelevels = [1, 1, 6, 9, 15, 18, 26, 29, 36, 39, 46, 49, 56, 59];
+		moves = ['Leech Life', 'Leer', 'Poison Sting', 'Para Needle', 'Sweet Kiss', 'Bug Bite',
+			'Shadow Sneak', 'Drain Life', 'Poison Fang', 'Slumber Fang', 'Toxic', 'Cross Poison',
+			'X-Scissor', 'Backstab'];
+		break;
+
+	case 'bucarat':
+		movelevels = [1, 3, 8, 10, 15, 17, 22, 24, 29, 31, 36, 38, 43];
+		moves = ['Scratch', 'Tail Whip', 'Acid', 'Torment', 'Sludge', 'Fury Swipes', 'Hone Claws',
+			'Vector Jab', 'Toxic', 'Poison Jab', 'Sucker Punch', 'Miasma Terrain', 'Gunk Shot'];
+		break;
+
+	case 'mortarat':
+		movelevels = [1, 3, 8, 10, 15, 17, 22, 25, 32, 35, 42, 45, 52];
+		moves = ['Scratch', 'Tail Whip', 'Acid', 'Torment', 'Sludge', 'Fury Swipes', 'Hone Claws',
+			'Vector Jab', 'Toxic', 'Poison Jab', 'Bounce', 'Miasma Terrain', 'Gunk Shot'];
+		break;
+
+	case 'tinimer':
+		movelevels = [1, 1, 5, 10, 14, 19, 23, 28, 32, 37, 41, 46, 50];
+		moves = ['String Shot', 'Leech Life', 'Camouflage', 'Struggle Bug', 'Quick Attack',
+			'Spider Web', 'Silver Wind', 'Tickle', 'Nature Power', 'Bug Buzz', 'Weather Ball',
+			'Sticky Web', 'Flail'];
+		break;
+
 	}
 
 	// iterate through list of movelevels
