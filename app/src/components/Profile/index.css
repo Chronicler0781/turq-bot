@@ -1,0 +1,61 @@
+.Profile {
+    background-color: darkcyan;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    border-radius: 10px;
+    padding: 3px;
+}
+
+.Profile-title {
+    background-color: darkslategray;
+    color: whitesmoke;
+}
+
+.Profile-panel1 {
+    display: flex;
+    justify-content: space-around;
+}
+
+.Profile-panel2 {
+    display: flex;
+    justify-content: space-around;
+}
+
+.Profile-basicInfo {
+    flex: 1;
+}
+.Profile-rivalInfo {
+    flex: 2;
+}
+
+.Profile-inventory {
+    flex: 1;
+    max-height: 500px;
+}
+
+.Profile-party {
+    flex: 2;
+    text-align: left;
+    border-radius: 10px;
+}
+
+
+.Profile ul {
+    list-style-type: none;
+}
+
+
+.Profile h2 {
+    background-color: darkcyan;
+    color: whitesmoke;
+}
+
+.Profile .component {
+    margin: 2px;
+    background-color: whitesmoke;
+    overflow-y: auto;
+    text-align: left;
+    border-radius: 5px;
+    max-height: 500px;
+}
