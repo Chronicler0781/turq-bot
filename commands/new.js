@@ -16,8 +16,8 @@ module.exports = {
 		async function main() {
 
 			// login to mongodb
-			const uri = 'mongodb+srv://USERNAME:PASSWORD@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority';
-			const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+			const conf = require('../config.json');
+			const client = new MongoClient(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 			try {
 				await client.connect();
