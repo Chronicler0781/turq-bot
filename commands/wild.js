@@ -11,7 +11,7 @@ module.exports = {
 		async function main() {
 
 			// connect to mongodb
-			const uri = 'mongodb+srv://turqbot:turquoise2007@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority';
+			const uri = 'mongodb+srv://USERNAME:PASSWORD@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority';
 			const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 			try {

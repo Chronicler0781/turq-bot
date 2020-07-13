@@ -16,7 +16,7 @@ module.exports = {
 		async function main() {
 
 			// login to mongodb
-			const uri = 'mongodb+srv://turqbot:turquoise2007@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority';
+			const uri = 'mongodb+srv://USERNAME:PASSWORD@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority';
 			const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 			try {
@@ -131,8 +131,9 @@ module.exports = {
 									PartySlot4: 'Empty',
 									PartySlot5: 'Empty',
 									PartySlot6: 'Empty',
+									Visited: ['leddintown'],
 									Location: 'Leddin Town',
-									Area: 'N/A',
+									Area: '',
 									BattleID: '',
 									ProfilePost: '',
 									Slot1Post: '',
