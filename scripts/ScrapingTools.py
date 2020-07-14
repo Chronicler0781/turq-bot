@@ -135,7 +135,7 @@ class PokemonScraper(PhoenixdexScraper):
         for cell in stat_cells:
             stat_block = cell.find('th')
             stat = stat_block.text.split(": ")[1] # strip stat name
-            base_stats.append(int(stat))
+            base_stats.append(stat)
         stat_names = ["hp", "atk", "def", "spatk", "spdef", "spd"]
         return {stat_names[i]: base_stats[i] for i in range(len(base_stats))}
 
@@ -151,7 +151,7 @@ class PokemonScraper(PhoenixdexScraper):
         moveset_table = soup.find('table', class_='move-table')
         move_rows = moveset_table.findChildren('tr')
         for move_row in move_rows:
-            lastLevel = 1
+            lastLevel = "1"
             cols = move_row.findChildren('td')
             if (cols):
                 if cols[0].text == "1RL": # relearner moves
@@ -162,7 +162,7 @@ class PokemonScraper(PhoenixdexScraper):
                                         # all moves after the first do not have their levels marked.
                     moves["levelUp"][lastLevel] = cols[1].text
                 else:
-                    lastLevel = int(cols[0].text)
+                    lastLevel = cols[0].text
                     moves["levelUp"][lastLevel] = cols[1].text
         return moves
 
@@ -243,12 +243,10 @@ class MoveScraper(PhoenixdexScraper):
         stat_rows = [stat.text for stat in stat_rows]
         for i, k in enumerate(stats):
             stat = stat_rows[i]
-            if stat.isnumeric():
-                stat = int(stat)
-            elif stat.endswith("%"):
+            if stat.endswith("%"):
                 stat = stat[:-1]
                 if stat.isnumeric():
-                    stat = float(int(stat) / 100)
+                    stat = str(float(int(stat) / 100))
             if stat == "—":
                 stat = None
             stats[k] = stat
