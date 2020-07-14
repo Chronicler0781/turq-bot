@@ -76,6 +76,10 @@ class DBUpdater:
             
 
 if __name__ == "__main__":
+    help_message = """Usage: python DBUpdater.py [content type] [record list]
+    - [content type]: one of [pokeon/move/ability/all]
+                      determines the type of content being updated
+    - [record list]:  comma-separated list of records to update"""
     updater = DBUpdater()
     valid_content_types = {"pokemon": "dex", "move": "moves", "ability": "abilities", "all": ''}
     if len(argv) == 1:
@@ -85,6 +89,9 @@ if __name__ == "__main__":
             if content_type not in valid_content_types:
                 print("Invalid content type.  Choose one of [{}]\n> ".format("/".join([*valid_content_types.keys()])))
     else:
+        if argv[1] in ["help", "h", "-h", "--h", "--help"]:
+            print(help_message)
+            exit()
         content_type = argv[1]
         if content_type not in valid_content_types:
             raise ValueError("Invalid content type.  Choose one of [{}]\n> ".format("/".join([*valid_content_types.keys()])))
