@@ -79,3 +79,30 @@ bot.on('message', message =>{
 
 
 bot.login(token);
+
+
+
+const express = require('express')
+var cors = require('cors')
+
+const app = express()
+const port = 3001
+
+const MongoClient = require('mongodb').MongoClient;
+const conf = require('./config.json');
+const client = new MongoClient(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+app.use(cors())
+app.get('/profile/:id', async (req, res) => {
+	await client.connect();
+	const id = req.params.id;
+	try {
+		const data = await client.db('turqdb').collection('profiles').findOne({ _id: id });
+		return res.json({data});
+	}
+	catch (e)
+	{
+		return res.json({e});
+	}
+})
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))

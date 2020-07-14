@@ -4,13 +4,17 @@
   "description": "",
   "main": "main.js",
   "scripts": {
+    "bot": "node main.js",
+    "client": "yarn --cwd ./app start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Chronicler",
   "license": "ISC",
   "dependencies": {
     "canvas": "^2.6.1",
+    "cors": "^2.8.5",
     "discord.js": "^12.2.0",
+    "express": "^4.17.1",
     "merge-images": "^2.0.0",
     "mongodb": "^3.5.9"
   }

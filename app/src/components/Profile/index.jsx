@@ -1,11 +1,25 @@
 import React from 'react';
+import { MongoClient } from "mongodb"
 import './index.css';
+
+const conf = {
+	"uri": "mongodb+srv://turqbot:turquoise2007@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority"
+}
+
 
 class Profile extends React.Component {
 
+	async componentDidMount(){
+		const response = await fetch(`http://localhost:3001/profile/${"732535399301251082"}`);
+		const { data } = await response.json();
+		// this.setState({data})
+		console.log(data);
+	}
+
 	constructor(props) {
 		super(props);
-		this.state = {
+		this.state = {}
+		this.state.data = {
 			// dummy data for now
 			name: "Lord Dalmonde",
 			age: 37,
@@ -51,22 +65,24 @@ class Profile extends React.Component {
 	}
 
 	render () {
-		const { inventory, rival } = this.state;
+		const { data } = this.state;
+		const { inventory, rival } = data;
 		const imgUrl = name => `http://turquoise.alteredorigin.net/images/pseudosprites/${name.toLocaleLowerCase()}.png`;
 		const dexUrl = name =>`http://turquoise.alteredorigin.net/pokemon/${name.toLocaleLowerCase()}/`;
-		const party = Array(6).fill(this.state.party[0])
+		const party = [] || Array(6).fill(data.party[0])
+
 
 		return (<div className="Profile">
-			<h1 className="Profile-title">{`${this.state.name}'s Profile`}</h1>
+			<h1 className="Profile-title">{`${data.name}'s Profile`}</h1>
 			<hr/>
 			<div className="Profile-panel1">
 				<div className="Profile-basicInfo component">
 					<h2>Basic Info:</h2><hr />
 					<ul>
-						<li>Name: {this.state.name}</li>
-						<li>Age: {this.state.age}</li>
-						<li>Gender: {this.state.gender}</li>
-						<li>Self Info: {this.state.bio}</li>
+						<li>Name: {data.name}</li>
+						<li>Age: {data.age}</li>
+						<li>Gender: {data.gender}</li>
+						<li>Self Info: {data.bio}</li>
 					</ul>
 				</div>
 				<div className="Profile-rivalInfo component">
