@@ -86,7 +86,7 @@ module.exports = {
 							// create new database entry for specified starter pokemon
 							const starter = await createPokemon(client,
 								{
-									Pokémon: args[4],
+									Pokemon: args[4],
 									Level: 5,
 									Gender: gend,
 									CurrentHP: stats[0],
@@ -269,7 +269,7 @@ module.exports = {
 
 		// function for creating a pokemon in mongodb, returns new pokemon database object
 		async function createPokemon(client, newPokemon) {
-			const result = await client.db('turqdb').collection('pokémon').insertOne(newPokemon);
+			const result = await client.db('turqdb').collection('pokemon').insertOne(newPokemon);
 			console.log(`New Pokémon created with the following id: ${result.insertedId}`);
 			return result;
 		}
