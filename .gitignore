@@ -4,5 +4,6 @@ npm-debug.log
 .env
 .DS_Store
 
+.eslintrc.json
 config.json
 __pycache__

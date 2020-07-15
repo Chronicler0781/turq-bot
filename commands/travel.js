@@ -51,10 +51,10 @@ module.exports = {
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
 					// Leddin Town - Access to Route NL1 South, Ferry
 					case 'leddintown':
-						if ((oldLocation == 'routenl1' && oldArea == 'south') || (canFly == true && places.includes(newLocation))) {
+						if ((oldLocation == 'routenl1south') || (canFly == true && places.includes(newLocation))) {
 							location = 'Leddin Town';
 							area = '';
-							if (oldLocation == 'routenl1') {
+							if (oldLocation == 'routenl1south') {
 								message.channel.send('>>> With naught but the sounds of Auriole chirping, you arrive in the quaint and peaceful Leddin Town. A nostalgic feeling wells up in you as lay eyes on Gadari\'s training field, where you got your first Pokémon and had your first battle. The feeling that Leddin Town gives off can be described as nothing short of warm and inviting as you return.');
 							}
 							else {
@@ -71,24 +71,24 @@ module.exports = {
 					// Route NL1 - Access to Leddin Town, Dingbat Cave, Shrdlu Town
 					case 'routenl1':
 						if (oldLocation == 'leddintown' && newArea != 'north') {
-							location = 'Route NL1';
+							location = 'Route NL1 South';
 							area = 'South';
 							message.channel.send('>>> Leaving Leddin Town, a long and vibrant path lays ahead, full of lively Pokémon you usually only see from afar. Be careful, a young and antsy wild Pokémon could attack at any moment! The entrance to Dingbat Cave looms in the far distance, waiting for the next trainer to brave its darkness.');
 						}
 						else if (oldLocation == 'shrdlutown' && newArea != 'south') {
-							location = 'routenl1';
+							location = 'Route NL1 North';
 							area = 'North';
 							message.channel.send('>>> Leaving Shrdlu Town, you return to the short stretch of Route NL1 that your traversed not too long ago. The wild Pokémon don\'t seem to startle you as much anymore, and the sight of the dreary Dingbat Cave up ahead doesn\'t seem as intimidating this time around. Onward!');
 						}
 						else if (oldLocation == 'dingbatcave' || (canFly == true && places.includes(newLocation))) {
 							switch(newArea) {
 							case 'north':
-								location = 'Route NL1';
+								location = 'Route NL1 North';
 								area = 'North';
 								break;
 
 							case 'south':
-								location = 'Route NL1';
+								location = 'Route NL1 South';
 								area = 'South';
 								break;
 
@@ -97,10 +97,10 @@ module.exports = {
 								denied = true;
 								break;
 							}
-							if (oldLocation != 'dingbatcave' && (area == 'North' || area == 'South')) {
+							if (oldLocation != 'dingbatcaveuppercaverns' && (area == 'North' || area == 'South')) {
 								message.channel.send(`>>> Landing on the ${area} end of Route NL1, you thank your ${flyPoke} and give them a loving pat for offering you a ride before returning them to their Poké Ball. The wild Pokémon don't seem to startle you as much anymore, and the sight of the dreary Dingbat Cave up ahead doesn't seem as intimidating this time around. Onward!`);
 							}
-							else if(oldLocation == 'dingbatcave' && (area == 'North' || area == 'South')) {
+							else if(oldLocation == 'dingbatcaveuppercaverns' && (area == 'North' || area == 'South')) {
 								message.channel.send('>>> Emerging from the darkness of Dingbat Cave, your pupils constrict as the light from the sun initially blinds you. All you can think about is getting to the next town and taking a shower to get the grime and Dustley dust off.');
 							}
 						}
@@ -118,21 +118,21 @@ module.exports = {
 
 					// Dingbat Cave - Access to Route NL1 North or South
 					case 'dingbatcave':
-						if (oldLocation == 'routenl1' || oldLocation == 'dingbatcave' || (canFly == true && places.includes(newLocation))) {
+						if (oldLocation == 'routenl1north' || oldLocation == 'routenl1south' || oldLocation == 'dingbatcaveuppercaverns' || (canFly == true && places.includes(newLocation))) {
 							let phrase = '';
-							if (oldLocation != 'routenl1') {
+							if (oldLocation != 'routenl1north' && oldLocation != 'routenl1south') {
 								phrase = 'Landing outside the entrance to Dingbat Cave, you peer into the seemingly endless darkness before stepping inside.';
 							}
 							switch(newArea) {
 							case 'uppercaverns':
-								location = 'Dingbat Cave';
+								location = 'Dingbat Cave Upper Caverns';
 								area = 'Upper Caverns';
 								message.channel.send(`>>> ${phrase}The inside of Dingbat Cave leaves one feeling claustrophobic and frankly a little damp. You sneeze every so often as dust is scattered through the open spaces with each step. You can try and traverse deeper into the abyss of the cave, or do your best to reach the other side as quickly as possible.`);
 								break;
 
 							case 'lowercaverns':
 								if (numBadges >= 3) {
-									location = 'Dingbat Cave';
+									location = 'Dingbat Cave Lower Caverns';
 									area = 'Lower Caverns';
 									message.channel.send(`>>> ${phrase}Braving the depths, you traverse deeper and deeper into the abyss of the cave. You feel as if maybe you'll never see the light again. But who knows, maybe you'll find some of Dingbat Helmsley's 'supposed' treasure? `);
 								}
@@ -158,10 +158,10 @@ module.exports = {
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
 					// Shrdlu Town - Access to Route NL1 North, Route NL2
 					case 'shrdlutown':
-						if ((oldLocation == 'routenl1' && oldArea == 'north') || oldLocation == 'routenl2' || (canFly == true && places.includes(newLocation))) {
-							location = 'Leddin Town';
+						if ((oldLocation == 'routenl1north') || oldLocation == 'routenl2' || (canFly == true && places.includes(newLocation))) {
+							location = 'Shrdlu Town';
 							area = '';
-							if (oldLocation == 'routenl1') {
+							if (oldLocation == 'routenl1north') {
 								message.channel.send('>>> With naught but the sounds of Auriole chirping, you arrive in the quaint and peaceful Leddin Town. A nostalgic feeling wells up in you as lay eyes on Gadari\'s training field, where you got your first Pokémon and had your first battle. The feeling that Leddin Town gives off can be described as nothing short of warm and inviting as you return.');
 							}
 							else if (oldLocation == 'routenl2') {
