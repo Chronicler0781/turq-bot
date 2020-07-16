@@ -232,13 +232,14 @@ class PokemonScraper(PhoenixdexScraper):
                     moves["levelUp"][lastLevel] = cols[1].text
         # by machine
         for index, learn_method in enumerate(["machine", "tutor", "egg"]):
-            table = move_tables[index + 1]
-            move_rows = table.findChildren('tr')
-            for move_row in move_rows:
-                cols = move_row.findChildren('td')
-                if cols:
-                    move_name = cols[1 if learn_method == "machine" else 0].text
-                    moves[learn_method].append(move_name)
+            if len(move_tables) >= index + 2: # make sure the table exists; eggless pokémon will not have egg moves
+                table = move_tables[index + 1]
+                move_rows = table.findChildren('tr')
+                for move_row in move_rows:
+                    cols = move_row.findChildren('td')
+                    if cols:
+                        move_name = cols[1 if learn_method == "machine" else 0].text
+                        moves[learn_method].append(move_name)
         return moves
 
     def get_data(self, pokemon_name, as_json=False):
