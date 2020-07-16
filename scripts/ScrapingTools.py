@@ -139,17 +139,83 @@ class PokemonScraper(PhoenixdexScraper):
         stat_names = ["hp", "atk", "def", "spatk", "spdef", "spd"]
         return {stat_names[i]: base_stats[i] for i in range(len(base_stats))}
 
-    def get_learnset(self, pokemon_name):
+    def get_gender(self, pokemon_name):
+        """return a float value for the pokémon's gender.
+           if the return is negative, the pokémon is genderless;
+           otherwise, the float is value (0 <= x <= 1) representing
+           the pokémon's odds of rolling male.
+        """
+        soup = self.get_soup(pokemon_name)
+        gender_div = soup.find('div', class_='gender-ratio')
+        is_genderless = gender_div.find('div', class_='progress-bar-neuter')
+        if is_genderless:
+            return -1
+        else:
+            male_ratio = gender_div.find('div', class_='progress-bar-male')
+            if not male_ratio:
+                return 0 # 100% female
+            else:
+                male_ratio = male_ratio.text.split(" ")[0][:-1] # ger percentage, strip % sign
+                return str(float(male_ratio) / 100)
+
+    def get_egg_groups(self, pokemon_name):
+        """return an array containing the pokémon's egg groups."""
+        soup = self.get_soup(pokemon_name)
+        egg_group_header = soup.find('h4', text="Egg Groups")
+        egg_groups = egg_group_header.nextSibling.nextSibling.text.strip()
+        return egg_groups.split(", ")
+
+    def get_misc_data(self, pokemon_name):
+        """return a dict containing the pokémon's capture rate and base happiness."""
+        soup = self.get_soup(pokemon_name)
+        catch_rate_header = soup.find(lambda tag: tag.name == 'strong' and "Catch Rate:" in tag.text)
+        catch_rate = catch_rate_header.nextSibling
+        happiness_header = soup.find(lambda tag: tag.name == 'strong' and "Base Happiness:" in tag.text)
+        happiness = happiness_header.nextSibling
+        classification_header = soup.find(lambda tag: tag.name == 'h3' and "Classification" in tag.text)
+        classification = classification_header.nextSibling.nextSibling.text.split(" ")
+        return {"catchRate": catch_rate.strip(), "baseHappiness": happiness.strip(), "classification": " ".join(classification[1:-1])}
+
+    def get_dex_entries(self, pokemon_name):
+        """return an array containing the pokémon's dex flavor entries."""
+        soup = self.get_soup(pokemon_name)
+        dex_header = soup.find(lambda tag: tag.name == 'h3' and "Pokédex Entries" in tag.text)
+        dex_entry_div = dex_header.nextSibling.nextSibling
+        entries = dex_entry_div.findChildren('p')
+        return [entry.text for entry in entries]
+
+    def get_held_items(self, pokemon_name):
+        """return a dict containing the pokémon's possible held items and their probabilities."""
+        soup = self.get_soup(pokemon_name)
+        held_items = {}
+        held_items_header = soup.find(lambda tag: tag.name == 'h3' and "Wild Held Items" in tag.text)
+        if not held_items_header:
+            return held_items
+        else:
+            held_items_list = held_items_header.nextSibling.findChildren('li')
+            for item in held_items_list:
+                item_arr = item.text.split("% ")
+                probability = str(float(item_arr[0]) / 100)
+                held_items[item_arr[1]] = probability
+            return held_items
+
+
+    def get_moves(self, pokemon_name):
         """return a nested dict of the moves that the pokémon learns.
         the keys and dicts are as follows:
         - "levelUp": contains a dict of the moves the pokémon learns by level-up, mapped to the levels it learns them.
         - "relearn": contains a list of moves the pokémon may learn exclusively by relearn tutor.
         - "evo":     contains a list of moves the pokémon learns upon evolution.
+        - "machine": contains a list of moves the pokémon learns by TM/HM.
+        - "tutor":   contains a list of moves the pokémon learns by tutor.
+        - "egg":     contains a list of moves the pokémon may receive as egg moves.
         """
-        moves = {"levelUp": {}, "relearn": [], "evo": []}
+        moves = {"levelUp": {}, "relearn": [], "evo": [], "machine": [], "tutor": [], "egg": []}
         soup = self.get_soup(pokemon_name)
-        moveset_table = soup.find('table', class_='move-table')
-        move_rows = moveset_table.findChildren('tr')
+        move_tables = soup.findAll('table', class_='move-table')
+        # by level-up/relearn/evo
+        learnset_table = move_tables[0]
+        move_rows = learnset_table.findChildren('tr')
         for move_row in move_rows:
             lastLevel = "1"
             cols = move_row.findChildren('td')
@@ -164,6 +230,15 @@ class PokemonScraper(PhoenixdexScraper):
                 else:
                     lastLevel = cols[0].text
                     moves["levelUp"][lastLevel] = cols[1].text
+        # by machine
+        for index, learn_method in enumerate(["machine", "tutor", "egg"]):
+            table = move_tables[index + 1]
+            move_rows = table.findChildren('tr')
+            for move_row in move_rows:
+                cols = move_row.findChildren('td')
+                if cols:
+                    move_name = cols[1 if learn_method == "machine" else 0].text
+                    moves[learn_method].append(move_name)
         return moves
 
     def get_data(self, pokemon_name, as_json=False):
@@ -171,12 +246,20 @@ class PokemonScraper(PhoenixdexScraper):
         contains the pokémon's name, types, abilities, base stats, and moves.
         if the as_json flag is set to True, return the dict as json.
         """
+        misc_data = self.get_misc_data(pokemon_name)
         data = {
             "name": pokemon_name,
+            "classification": misc_data["classification"],
             "types": self.get_types(pokemon_name),
             "abilities": self.get_abilities(pokemon_name),
             "baseStats": self.get_stats(pokemon_name),
-            "moves": self.get_learnset(pokemon_name)
+            "gender": self.get_gender(pokemon_name),
+            "dexEntries": self.get_dex_entries(pokemon_name),
+            "eggGroup": self.get_egg_groups(pokemon_name),
+            "catchRate": misc_data["catchRate"],
+            "baseHappiness": misc_data["baseHappiness"],
+            "heldItems": self.get_held_items(pokemon_name),
+            "moves": self.get_moves(pokemon_name)
         }
         if as_json:
             return json.dumps(data, indent=4)
@@ -358,3 +441,7 @@ class AbilityScraper(PhoenixdexScraper):
             return json.dumps(data, indent=4)
         else:
             return data
+
+if __name__ == "__main__":
+    mon_scraper = PokemonScraper()
+    print(mon_scraper.get_data("Rapscalion"))
