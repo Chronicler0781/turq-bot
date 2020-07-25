@@ -44,8 +44,8 @@ module.exports = {
 					switch(location) {
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 600: auriole line 40, dustley line 30, kizziff line 20, tinimer 10
-					case 'route600':
+					// Route NL1: auriole line 40, dustley line 30, kizziff line 20, tinimer 10
+					case 'routenl1':
 						if (WildResult > 0 && WildResult < 41) {
 							if (WildLevel < 24 || stage1 < 51) {
 								wildpoke = 'auriole';
@@ -97,7 +97,7 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 600: auriole line 40, dustley line 30, kizziff line 20, tinimer 10
+					// Route NL1: auriole line 40, dustley line 30, kizziff line 20, tinimer 10
 					case 'dingbatcave':
 						switch(area) {
 
@@ -263,8 +263,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 601 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
-					case 'route601':
+					// Route NL2 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
+					case 'routenl2':
 						if (WildResult > 0 && WildResult < 51) {
 							if (WildLevel < 34 || stage1 < 51) {
 								wildpoke = 'latikrai';
@@ -300,8 +300,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 602 (Grass): gowatu line 25, auriole line 20, dustley line 20, espurr line 15, petilil 10, buneary 10
-					case 'route602':
+					// Route NL3 (Grass): gowatu line 25, auriole line 20, dustley line 20, espurr line 15, petilil 10, buneary 10
+					case 'routenl3':
 						if (WildResult > 0 && WildResult < 26) {
 							if (WildLevel < 25 || stage1 < 51) {
 								wildpoke = 'gowatu';
@@ -376,8 +376,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 603 / Denath Plains: gowatu line 30, mefflora line 24, espurr line 15, natu line 10, petilil 10, buneary/kangaskhan 10, cherubi line 1
-					case 'route603':
+					// Route NL4 / Denath Plains: gowatu line 30, mefflora line 24, espurr line 15, natu line 10, petilil 10, buneary/kangaskhan 10, cherubi line 1
+					case 'routenl4':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 25 || stage1 < 51) {
 								wildpoke = 'gowatu';
@@ -630,8 +630,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 604: gowatu line 30, auriole line 25, dustley line 20, natu line 10, nincada line 10, pachirisu 5
-					case 'route604':
+					// Route NL5: gowatu line 30, auriole line 25, dustley line 20, natu line 10, nincada line 10, pachirisu 5
+					case 'routenl5':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 25 || stage1 < 51) {
 								wildpoke = 'gowatu';
@@ -709,7 +709,7 @@ module.exports = {
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
 					// Route 605 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
-					case 'route605':
+					case 'routenl6':
 						if (WildResult > 0 && WildResult < 51) {
 							if (WildLevel < 34 || stage1 < 51) {
 								wildpoke = 'latikrai';
@@ -745,8 +745,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 606: auriole line 30, paras line 20, gowatu line/josuche 15, curlsa line 10, nincada line 10, pachirisu 10, minijina line 5
-					case 'route606':
+					// Route NL7: auriole line 30, paras line 20, gowatu line/josuche 15, curlsa line 10, nincada line 10, pachirisu 10, minijina line 5
+					case 'routenl7':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 24 || stage1 < 51) {
 								wildpoke = 'auriole';
@@ -1024,8 +1024,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 607: mareep line 30, swablu line 25, humbuzz line 20, lamlie line 10, phanpy line 10, thunderma 5
-					case 'route607':
+					// Route NL8: mareep line 30, swablu line 25, humbuzz line 20, lamlie line 10, phanpy line 10, thunderma 5
+					case 'routenl8':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 15 || (WildLevel < 30 && stage1 < 51) || (WildLevel > 29 && stage2 < 34)) {
 								wildpoke = 'mareep';
@@ -1333,8 +1333,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 608 (Grass): mareep line 30, auriole line 25, nuwill 20, lamlie line 10, phanpy line 10, thunderma/rasqueon 5
-					case 'route608':
+					// Route NL9 (Grass): mareep line 30, auriole line 25, nuwill 20, lamlie line 10, phanpy line 10, thunderma/rasqueon 5
+					case 'routenl9':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 15 || (WildLevel < 30 && stage1 < 51) || (WildLevel > 29 && stage2 < 34)) {
 								wildpoke = 'mareep';
@@ -1414,7 +1414,7 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Fulgurok Caves / Fulgurok Island (Caves): bucarat line 25, aron line 25, drilbur line 25, dasfix line 10, aron/durant 5, mawile/petrocka 5ea
+					// Fulgurok Caves: bucarat line 25, aron line 25, drilbur line 25, dasfix line 10, aron/durant 5, mawile/petrocka 5ea
 					case 'fulgurokcaves':
 						if (WildResult > 0 && WildResult < 26) {
 							if (WildLevel < 22 || stage1 < 51) {
@@ -1499,7 +1499,7 @@ module.exports = {
 						}
 						break;
 
-					// Fulgurok Caves / Fulgurok Island (Island): bucarat line 40, kiblis line 35, gravendou line 20, gravendou/cragendou/shuckle 4, kiblis/caslot 1
+					// Fulgurok Island: bucarat line 40, kiblis line 35, gravendou line 20, gravendou/cragendou/shuckle 4, kiblis/caslot 1
 					case 'fulgurokisland':
 						if (WildResult > 0 && WildResult < 41) {
 							if (WildLevel < 22 || stage1 < 51) {
@@ -1581,8 +1581,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 609: mareep line 25, humbuzz line 25, meditite line 20, lamlie line 10, phanpy line 10, duskull line 10
-					case 'route609':
+					// Route NL10: mareep line 25, humbuzz line 25, meditite line 20, lamlie line 10, phanpy line 10, duskull line 10
+					case 'routenl10':
 						if (WildResult > 0 && WildResult < 26) {
 							if (WildLevel < 15 || (WildLevel < 30 && stage1 < 51) || (WildLevel > 29 && stage2 < 34)) {
 								wildpoke = 'mareep';
@@ -1667,8 +1667,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 610 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
-					case 'route610':
+					// Route NL11 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
+					case 'routenl11':
 						if (WildResult > 0 && WildResult < 51) {
 							if (WildLevel < 34 || stage1 < 51) {
 								wildpoke = 'latikrai';
@@ -1704,8 +1704,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 611: dustley line 35, kizziff line 25, farfetch'd line 15, duskull line 10, minccino/zangoose 10, farfetch'd/hawlucha 4, turistar line 1
-					case 'route611':
+					// Route NL12: dustley line 35, kizziff line 25, farfetch'd line 15, duskull line 10, minccino/zangoose 10, farfetch'd/hawlucha 4, turistar line 1
+					case 'routenl12':
 						if (WildResult > 0 && WildResult < 36) {
 							if (WildLevel < 20 || stage1 < 51) {
 								wildpoke = 'dustley';
@@ -1819,8 +1819,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 612 / Xybryle Bridge: turistar line 30, minccino/zangoose 20, minccino/seviper 20, farfetch'd/hawlucha 10, chatot/onzarudo 10, quimpy 5, minccino/rasqueon 5
-					case 'route612':
+					// Route NL13 / Xybryle Bridge: turistar line 30, minccino/zangoose 20, minccino/seviper 20, farfetch'd/hawlucha 10, chatot/onzarudo 10, quimpy 5, minccino/rasqueon 5
+					case 'routenl13':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 32 || stage1 < 51) {
 								wildpoke = 'turistar';
@@ -1923,8 +1923,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 613: auriole line 35, kizziff line 25, chatot line 15, scraggy line 10, minccino/seviper 10, chatot/onzarudo 4, turistar line 1
-					case 'route613':
+					// Route NL14: auriole line 35, kizziff line 25, chatot line 15, scraggy line 10, minccino/seviper 10, chatot/onzarudo 4, turistar line 1
+					case 'routenl14':
 						if (WildResult > 0 && WildResult < 36) {
 							if (WildLevel < 24 || stage1 < 51) {
 								wildpoke = 'auriole';
@@ -2182,7 +2182,7 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					case 'tonkura':
+					case 'ton-kura':
 						switch(area) {
 
 						// Ton-Kura (Seabed): kelfee line 50, sharpedo 25, freye line 25
@@ -2308,8 +2308,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 614 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
-					case 'route614':
+					// Route NL15 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
+					case 'routenl15':
 						if (WildResult > 0 && WildResult < 51) {
 							if (WildLevel < 34 || stage1 < 51) {
 								wildpoke = 'latikrai';
@@ -2345,8 +2345,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 615: auriole line 35, dustley line 30, scraggy line 20, numel line 10, thunderma/razelodon 4, smeargle 1
-					case 'route615':
+					// Route NL16: auriole line 35, dustley line 30, scraggy line 20, numel line 10, thunderma/razelodon 4, smeargle 1
+					case 'routenl16':
 						if (WildResult > 0 && WildResult < 36) {
 							if (WildLevel < 24 || stage1 < 51) {
 								wildpoke = 'auriole';
@@ -2430,8 +2430,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 616: dustley line 25, sandile line 25, numel line 15, pindillo line 10, murkrow 10, misdreavus 10, lamanda 5
-					case 'route616':
+					// Route NL17: dustley line 25, sandile line 25, numel line 15, pindillo line 10, murkrow 10, misdreavus 10, lamanda 5
+					case 'routenl17':
 						if (WildResult > 0 && WildResult < 26) {
 							if (WildLevel < 20 || stage1 < 51) {
 								wildpoke = 'dustley';
@@ -2517,7 +2517,7 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 617: numel line 30, sandile line 25, pindillo line 20, galorindle line 15, numel/heatmor 5, slugma/durant 5
+					// Route NL18: numel line 30, sandile line 25, pindillo line 20, galorindle line 15, numel/heatmor 5, slugma/durant 5
 					case 'route617':
 						if (WildResult > 0 && WildResult < 31) {
 							if (WildLevel < 34 || stage1 < 51) {
@@ -2765,8 +2765,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 618: sandile line 35, numel line 20, galorindle 20, drilbur line 10, slugma line 10, tianglis/mandicore 5
-					case 'route618':
+					// Route NL19: sandile line 35, numel line 20, galorindle 20, drilbur line 10, slugma line 10, tianglis/mandicore 5
+					case 'routenl19':
 						if (WildResult > 0 && WildResult < 36) {
 							if (WildLevel < 29 || (WildLevel < 40 && stage1 < 51) || (WildLevel > 39 && stage2 < 34)) {
 								wildpoke = 'sandile';
@@ -2843,8 +2843,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 619 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
-					case 'route619':
+					// Route NL20 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 5
+					case 'routenl20':
 						if (WildResult > 0 && WildResult < 51) {
 							if (WildLevel < 34 || stage1 < 51) {
 								wildpoke = 'latikrai';
@@ -2880,8 +2880,8 @@ module.exports = {
 						break;
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
-					// Route 620 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 4, lapras 1
-					case 'route620':
+					// Route NL21 (Surfing): latikrai line 50, latikrai/sharpedo 45, aeolagio 4, lapras 1
+					case 'routenl21':
 						if (WildResult > 0 && WildResult < 51) {
 							if (WildLevel < 34 || stage1 < 51) {
 								wildpoke = 'latikrai';
@@ -3178,12 +3178,12 @@ module.exports = {
 
 		// function that determines the wild pokemon level (between 2 and 60) from the highest level in the player's party
 		async function levelcalc(client, profile) {
-			const slot1 = await client.db('turqdb').collection('pokémon').findOne({ _id: profile.PartySlot1 });
-			const slot2 = await client.db('turqdb').collection('pokémon').findOne({ _id: profile.PartySlot2 });
-			const slot3 = await client.db('turqdb').collection('pokémon').findOne({ _id: profile.PartySlot3 });
-			const slot4 = await client.db('turqdb').collection('pokémon').findOne({ _id: profile.PartySlot4 });
-			const slot5 = await client.db('turqdb').collection('pokémon').findOne({ _id: profile.PartySlot5 });
-			const slot6 = await client.db('turqdb').collection('pokémon').findOne({ _id: profile.PartySlot6 });
+			const slot1 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot1 });
+			const slot2 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot2 });
+			const slot3 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot3 });
+			const slot4 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot4 });
+			const slot5 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot5 });
+			const slot6 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot6 });
 
 			let count = 0;
 			const levels = [];
