@@ -3,6 +3,18 @@ const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const bot = new Discord.Client();
 const fs = require('fs');
+const runServer = require("./server");
+
+
+// mongoose / mongodb setup
+const mongoose = require('mongoose');
+const conf = require('./config.json');
+mongoose.connect(conf.uri, {useNewUrlParser: true});
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log("connected to mongodb");
+});
 
 // create commands collection so that command files can be referenced from command folder
 bot.commands = new Discord.Collection();
@@ -48,7 +60,7 @@ bot.on('message', message =>{
 
 	case 'new':
 		// check to see if user has the required staff roles needed to use the new command
-		if(message.member.roles.cache.some(role => role.name === 'Administrator') || message.member.roles.cache.some(role => role.name === 'Global Mod') || message.member.roles.cache.some(role => role.name === 'RPG Mod')) {
+		if(message.member.roles.cache.some(role => role.name === 'Administrators') || message.member.roles.cache.some(role => role.name === 'Global Mod') || message.member.roles.cache.some(role => role.name === 'RPG Mod')) {
 			// message.channel.send(`Member ${message.member.user.username} is recognized as an Administrator. A profile will be created.`);
 			bot.commands.get('new').execute(Discord, bot, message, args);
 		}
@@ -83,30 +95,4 @@ bot.on('message', message =>{
 
 
 bot.login(token);
-
-
-
-const express = require('express')
-var cors = require('cors')
-
-const app = express()
-const port = 3001
-
-const MongoClient = require('mongodb').MongoClient;
-const conf = require('./config.json');
-const client = new MongoClient(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-app.use(cors())
-app.get('/profile/:id', async (req, res) => {
-	await client.connect();
-	const id = req.params.id;
-	try {
-		const data = await client.db('turqdb').collection('profiles').findOne({ _id: id });
-		return res.json({data});
-	}
-	catch (e)
-	{
-		return res.json({e});
-	}
-})
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+runServer();
