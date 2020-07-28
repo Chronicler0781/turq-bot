@@ -1,10 +1,11 @@
+const { User, Pokemon, DexEntry } = require("../models");
+
 module.exports = {
 	name: 'new',
 	description: 'this command generates a new profile for the tagged user',
 	execute(Discord, bot, message, args) {
 
-		// add mongodb client and /pokeinfo/ function files for generating a new pokemon
-		const MongoClient = require('mongodb').MongoClient;
+		// add /pokeinfo/ function files for generating a new pokemon
 		const movesets = require('./pokeinfo/movesets.js');
 		const det_gender = require('./pokeinfo/det_gender.js');
 		const det_stats = require('./pokeinfo/det_stats.js');
@@ -14,14 +15,7 @@ module.exports = {
 
 		// main function for 'new' command, will not run until called.
 		async function main() {
-
-			// login to mongodb
-			const conf = require('../config.json');
-			const client = new MongoClient(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
 			try {
-				await client.connect();
-
 				// switch to determine subcommand of -new command
 				switch(args[0].toLowerCase()) {
 
@@ -33,19 +27,18 @@ module.exports = {
 					const taggedUser = message.guild.members.cache.find(m => m.user.tag === args[args.length - 1]);
 
 					// if no correct user is mentioned, do not continue
-					if (typeof taggedUser == 'undefined') {
+					if (!taggedUser) {
 						message.channel.send('>>> Please enter an existing server user when creating a profile.');
 					}
 					else {
 						// get discord userID for tagged user
 						const userID = taggedUser.user.id;
 
-						// search for pre-existing profile in profile database with discord ID
-						const userSearch = await findProfilebyID(client, userID);
+						// cannot use findById here because _id is expected to be an ObjectId type
+						const user = await User.findById(userID);
 
 						// if no mathcing profile is found, continue with profile creation
-						if (typeof userSearch == 'undefined') {
-
+						if (!user) {
 							// convert starter pokemon name to lower case, replace underscores with spaces in names
 							const pokemon = args[4].toLowerCase();
 							const trainer = args[1].replace(/_/g, ' ');
@@ -53,15 +46,16 @@ module.exports = {
 							const rival = args[6].replace(/_/g, ' ');
 
 							// set rival starter pokemon
-							let rivalstarter = [];
-							if(pokemon == 'crocoal') {
-								rivalstarter = 'spraylet';
-							}
-							else if(pokemon == 'spraylet') {
-								rivalstarter = 'acafia';
-							}
-							else {
-								rivalstarter = 'crocoal';
+							let rivalstarter = null;
+							switch(pokemon){
+								case "spraylet":
+									rivalStarter = "acafia"; break;
+								case "crocoal":
+									rivalStarter = "spraylet"; break;
+								case "acafia":
+									rivalStarter = "crocoal"; break;
+								 default:
+									  throw "invalid starter";
 							}
 
 							// determine Gender, HP, Ability, Nature, Moves, and Shininess of Starter
@@ -83,71 +77,63 @@ module.exports = {
 							const shininess = det_shiny();
 							console.log(`Is the Pokemon shiny?: ${shininess}`);
 
+							const dexEntry = await DexEntry.findOne({name: args[4]})
+
 							// create new database entry for specified starter pokemon
-							const starter = await createPokemon(client,
-								{
-									Pokemon: args[4],
-									Level: 5,
-									Gender: gend,
-									CurrentHP: stats[0],
-									MaxHP: stats[0],
-									Status: 'None',
-									AbilityNo: ability.number,
-									Ability: ability.name,
-									Nature: nature.name,
-									NatureMultipliers: nature.mult,
-									HeldItem: 'None',
-									Nickname: nname,
-									CurrentTrainer: trainer,
-									OT: trainer,
-									Moves: current_ms,
-									Experience: 0,
-									Shiny: shininess,
-								},
-							);
+							const starter = await Pokemon.create({ 
+								pokemon: dexEntry._id,
+								level: 5,
+								gender: gend,
+								currentHP: stats[0],
+								maxHP: stats[0],
+								status: 'None',
+								abilityNo: ability.number,
+								ability: ability.name,
+								nature: nature.name,
+								natureMultipliers: nature.mult,
+								heldItem: 'None',
+								nickname: nname,
+								currentTrainer: trainer,
+								OT: trainer,
+								moves: current_ms,
+								exp: 0,
+								shiny: shininess === "Yes",
+							});
 
 							// create new database entry for tagged user, assigns new starter's pokemon ID to PartySlot1
-							await createProfile(client,
-								{
-									_id: userID,
-									Name: trainer,
-									Age: args[2],
-									Gender: args[3],
-									Money: 1000,
-									Badges: [],
-									KeyItems: [],
-									GeneralItems: ['Oran Berry'],
-									PokéBalls: ['Poké Ball', 'Poké Ball', 'Poké Ball', 'Poké Ball',
-										'Poké Ball'],
-									TMs: [],
-									HMs: [],
-									RivalName: rival,
-									RivalAge: args[7],
-									RivalGender: args[8],
-									RivalTeam: [rivalstarter],
-									PartySlot1: starter.insertedId.toString(),
-									PartySlot2: 'Empty',
-									PartySlot3: 'Empty',
-									PartySlot4: 'Empty',
-									PartySlot5: 'Empty',
-									PartySlot6: 'Empty',
-									Visited: ['leddintown'],
-									Location: 'Leddin Town',
-									Area: '',
-									BattleID: '',
-									ProfilePost: '',
-									Slot1Post: '',
-									Slot2Post: '',
-									Slot3Post: '',
-									Slot4Post: '',
-									Slot5Post: '',
-									Slot6Post: '',
-									GlobalPlazaPost: '',
-									PCPosts: [],
-
+							const newUser = await User.create({
+								_id: userID,
+								username: taggedUser.user.username,
+							    firstName: trainer.split(" ")[0],
+							    lastName: trainer.split(" ")[1],
+    							age: parseInt(args[2]),
+								gender: args[3],
+								money: 1000,
+								badges: [],
+								keyItems: [],
+								tms: [],
+								hms: [],
+								party: [starter],
+								badges: [],
+								keyItems: [],
+								generalItems: [{name: 'Oran Berry', quantity: 1}],
+								pokeBalls: [{name: 'Poké Ball', quantity: 5}],
+								tms: [],
+								hms: [],
+								rival: {
+									name: rival,
+									age: args[7],
+									render: args[8],
+									team: [rivalstarter]
 								},
-							);
-
+								visited: ['leddintown'],
+								currentLocation: 'Leddin Town',
+								area: '',
+								battleID: '',
+							});
+							console.log(newUser);
+							message.reply("profile created");
+							return; // we can repurpose the code below maybe, break out for now
 							// find profile and adventure categories, create new channels under them for new player
 							const profilecat = message.guild.channels.cache.find(cat=> cat.name === 'RPG Profiles');
 							const adventurecat = message.guild.channels.cache.find(cat=> cat.name === 'Adventures');
@@ -233,7 +219,7 @@ module.exports = {
 								GlobalPlazaPost: gPlazaPost.id,
 								PCPosts: [box1Post.id],
 							};
-							await updateProfileByUserID(client, userID, updatedProfile);
+							// await updateProfileByUserID(client, userID, updatedProfile);
 
 							await bot.channels.cache.get(`${newadv.id}`).send('>>> Welcome to your adventure!');
 
@@ -242,7 +228,7 @@ module.exports = {
 								\nNew user adventure channel created at <#${newadv.id}>.`);
 						}
 						// exit out if profile was found matching user discord ID
-						else if (userID == userSearch._id) {
+						else {
 							message.channel.send(`>>> Profile already exists for ${taggedUser.user.username}.`);
 						}
 					}
@@ -252,49 +238,11 @@ module.exports = {
 			catch (e) {
 				console.error(e);
 			}
-			finally {
-				await client.close();
-			}
 		}
 
 		// run main function
 		main().catch(console.error);
 
-		// function for creating a profile in mongodb, returns new profile database object
-		async function createProfile(client, newProfile) {
-			const result = await client.db('turqdb').collection('profiles').insertOne(newProfile);
-			console.log(`New profile created with the following id: ${result.insertedId}`);
-			return result;
 		}
 
-		// function for creating a pokemon in mongodb, returns new pokemon database object
-		async function createPokemon(client, newPokemon) {
-			const result = await client.db('turqdb').collection('pokemon').insertOne(newPokemon);
-			console.log(`New Pokémon created with the following id: ${result.insertedId}`);
-			return result;
-		}
-
-		// function for searching profile collection for specified userID
-		async function findProfilebyID(client, userID) {
-			const result = await client.db('turqdb').collection('profiles').findOne({ _id: userID });
-			if (result) {
-				console.log(`Found a profile associated with UserID: '${userID}'`);
-				return result;
-			}
-			else {
-				// if no profile is found, result will be 'undefined'
-				console.log(`No profile found with the UserID: '${userID}'`);
-			}
-		}
-
-		async function updateProfileByUserID(client, userID, updatedProfile) {
-			const result = await client.db('turqdb').collection('profiles').updateOne(
-				{ _id: userID },
-				{ $set: updatedProfile },
-			);
-
-			console.log(`${result.matchedCount} document(s) matched the query criteria.`);
-			console.log(`${result.modifiedCount} document(s) was/were updated.`);
-		}
-	},
 };
