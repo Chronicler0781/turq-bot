@@ -46,15 +46,16 @@ module.exports = {
 							const rival = args[6].replace(/_/g, ' ');
 
 							// set rival starter pokemon
-							let rivalstarter = [];
-							if(pokemon == 'crocoal') {
-								rivalstarter = 'spraylet';
-							}
-							else if(pokemon == 'spraylet') {
-								rivalstarter = 'acafia';
-							}
-							else {
-								rivalstarter = 'crocoal';
+							let rivalstarter = null;
+							switch(pokemon){
+								case "spraylet":
+									rivalStarter = "acafia"; break;
+								case "crocoal":
+									rivalStarter = "spraylet"; break;
+								case "acafia":
+									rivalStarter = "crocoal"; break;
+								 default:
+									  throw "invalid starter";
 							}
 
 							// determine Gender, HP, Ability, Nature, Moves, and Shininess of Starter
