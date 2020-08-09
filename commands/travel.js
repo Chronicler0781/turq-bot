@@ -19,13 +19,13 @@ module.exports = {
 				// retrieve user profile from database
 				const userID = message.author.id;
 				const profile = await findProfilebyID(client, userID);
-				const places = profile.Visited;
+				const places = profile.visited;
 
-				if (profile.BattleID == '' || profile.BattleID == 'None') {
+				if (profile.battleID == '' || profile.battleID == 'None') {
 
 					// Set old and new location variables without spaces or capital letters for comparison
-					const oldLocation = profile.Location.replace(/\s/g, '').toLowerCase();
-					const oldArea = profile.Area.replace(/\s/g, '').toLowerCase();
+					const oldLocation = profile.currentLocation.replace(/\s/g, '').toLowerCase();
+					const oldArea = profile.area.replace(/\s/g, '').toLowerCase();
 					const newLocation = args[0].replace(/\s/g, '').toLowerCase();
 					let newArea = '';
 					if (args.length > 1) {
@@ -33,7 +33,7 @@ module.exports = {
 					}
 
 					// determine number of badges and if pokemon can fly or surf
-					const numBadges = profile.Badges.length;
+					const numBadges = profile.badges.length;
 					const { canSurf, surfPoke } = await surfCheck(client, profile);
 					const { canFly, flyPoke } = await flyCheck(client, profile);
 
@@ -397,7 +397,7 @@ module.exports = {
 					// Else, Update profile with new location and area
 					else {
 						places.push(newLocation);
-						await updateProfileByUserID(client, userID, { Location: location, Area: area, Visited: places });
+						await updateProfileByUserID(client, userID, { currentLocation: location, area: area, visited: places });
 					}
 				}
 				else {
@@ -419,7 +419,7 @@ module.exports = {
 
 		// function for searching a profile by the discord ID.
 		async function findProfilebyID(client, userID) {
-			const result = await client.db('turqdb').collection('profiles').findOne({ _id: userID });
+			const result = await client.db('turqdb').collection('users').findOne({ _id: userID });
 			if (result) {
 				console.log(`Found a profile associated with UserID: '${userID}'`);
 				return result;
@@ -518,7 +518,7 @@ module.exports = {
 		}
 
 		async function updateProfileByUserID(client, userID, updatedProfile) {
-			const result = await client.db('turqdb').collection('profiles').updateOne(
+			const result = await client.db('turqdb').collection('users').updateOne(
 				{ _id: userID },
 				{ $set: updatedProfile },
 			);

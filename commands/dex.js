@@ -4,7 +4,8 @@ module.exports = {
 	// practice command for linking to the dex entry of a specified pokemon
 
 	execute(message, args) {
-		if (args.length > 0)
+		if (args.length > 0) {
 			message.channel.send('http://turquoise.alteredorigin.net/pokemon/' + args[0].toLowerCase() + '/');
+		}
 	},
 };

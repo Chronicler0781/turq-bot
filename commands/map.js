@@ -21,7 +21,7 @@ module.exports = {
 				const userID = message.author.id;
 				const profile = await findProfilebyID(client, userID);
 
-				if (profile.BattleID == '' || profile.BattleID == 'None') {
+				if (profile.battleID == '' || profile.battleID == 'None') {
 
 					// Only continue there are none, 1, or 2 arguments
 					if (!args.length || args.length < 3) {
@@ -30,7 +30,7 @@ module.exports = {
 
 						// if no arguments, get current location of player
 						if (!args.length) {
-							const locName = profile.Location;
+							const locName = profile.currentLocation;
 							location = await findLocationbyName(client, locName);
 						}
 						// if 1 argument, get location specifified
@@ -206,7 +206,7 @@ module.exports = {
 
 		// function for searching a profile by the discord ID.
 		async function findProfilebyID(client, userID) {
-			const result = await client.db('turqdb').collection('profiles').findOne({ _id: userID });
+			const result = await client.db('turqdb').collection('users').findOne({ _id: userID });
 			if (result) {
 				console.log(`Found a profile associated with UserID: '${userID}'`);
 				return result;

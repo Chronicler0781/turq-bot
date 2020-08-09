@@ -8,10 +8,10 @@ module.exports = function det_shiny() {
 
 	// if result is 500, return yes for shiny field.
 	if (ShinyResult > 0 && ShinyResult < 500) {
-		shiny = 'No';
+		shiny = false;
 	}
 	else {
-		shiny = 'Yes';
+		shiny = true;
 	}
 	return shiny;
 };

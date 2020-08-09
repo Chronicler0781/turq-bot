@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User } = require('../models');
 
 module.exports = {
 	name: 'check',
@@ -10,20 +10,21 @@ module.exports = {
 			try {
 				// read first argument to figure out what is to be checked
 				if (args.length > 0) {
+					const taggedUser = message.author.id;
+					const userID = taggedUser.id;
+					const user = await User.findById(userID);
+
 					switch(args[0].toLowerCase()) {
 
 					case 'profile':
-						const taggedUser = message.mentions.users.first() 
-							|| message.author.id;
-						const userID = taggedUser.id;
-						const result = await User.findById(userID);
 						message.channel.send(`>>> __Profile of: ${taggedUser.username}__ \
-							\n**Name:** ${result.name} \
-							\n**Age:** ${result.age} \
-							\n**Gender:** ${result.gender}`);
+							\n**Name:** ${user.name} \
+							\n**Age:** ${user.age} \
+							\n**Gender:** ${user.gender}`);
 						break;
 					case 'party':
-						message.channel.send('to be implemented...')
+						message.channel.send('to be implemented...');
+						break;
 					}
 				}
 			}

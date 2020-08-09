@@ -3,8 +3,8 @@ module.exports = {
 	description: 'this command retrieves instructions for the specified command.',
 
 	execute(message, args) {
-		var conf = require('../config.json');
-		var command_prefix = conf.prefix;
+		const conf = require('../config.json');
+		const command_prefix = conf.prefix;
 		// Send standard help message if no arguments specified
 		if (!args.length) {
 			message.channel.send(`>>> Hello, I am Turq-Bot, your friendly neighborhood bot with the purpose of assisting new trainers of New Logora with their Pokémon adventure needs! \

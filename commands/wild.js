@@ -37,15 +37,15 @@ module.exports = {
 					let helditem = 'None';
 
 					// remove spaces and lowercases from location and area profile fields for switch comparisons
-					const location = profile.Location.replace(/\s/g, '').toLowerCase();
-					const area = profile.Area.replace(/\s/g, '').toLowerCase();
+					const location = profile.currentLocation.replace(/\s/g, '').toLowerCase();
+					const area = profile.area.replace(/\s/g, '').toLowerCase();
 
 					// switch-case statement for determining which wild list to use and picking a pokemon based on its rarity
 					switch(location) {
 
 					// -----------------------------------------------------------------------------------------------------------------------------------------------------
 					// Route NL1: auriole line 40, dustley line 30, kizziff line 20, tinimer 10
-					case 'routenl1':
+					case 'routenl1south':
 						if (WildResult > 0 && WildResult < 41) {
 							if (WildLevel < 24 || stage1 < 51) {
 								wildpoke = 'auriole';
@@ -3101,7 +3101,7 @@ module.exports = {
 
 					// create a new battle database entry with the two pokemon involved, save battle ID
 					const wildBattle = await createBattle(client, {
-						TrainerPokeID: profile.PartySlot1,
+						TrainerPokeID: profile.party[0],
 						WildPokeID: wildID,
 						TurnCount: 0,
 						Type: 'Wild',
@@ -3109,7 +3109,7 @@ module.exports = {
 					const wildBattleID = wildBattle.insertedId.toString();
 
 					// Update user's profile with new battle ID
-					const updatedProfile = { BattleID: wildBattleID };
+					const updatedProfile = { battleID: wildBattleID };
 					await updateProfileByUserID(client, userID, updatedProfile);
 
 					// Create gender emoji variable to male or female
@@ -3123,7 +3123,7 @@ module.exports = {
 
 					const wildBattleEmbed = new Discord.MessageEmbed()
 						.setColor('#0099ff')
-						.setAuthor(`${profile.Location}: ${profile.Area}`)
+						.setAuthor(`${profile.currentLocation}`)
 						.setTitle(`A wild ${gend_emoji} Lvl. ${WildLevel} ${wildpoke.charAt(0).toUpperCase() + wildpoke.slice(1)} appeared!`)
 						.setDescription(`**HP:** ${wild_obj.CurrentHP}/${wild_obj.MaxHP}`)
 						.setImage(`http://turquoise.alteredorigin.net/images/pseudosprites/${wildpoke}.png`)
@@ -3152,7 +3152,7 @@ module.exports = {
 
 		// function for searching a profile by the discord ID.
 		async function findProfilebyID(client, userID) {
-			const result = await client.db('turqdb').collection('profiles').findOne({ _id: userID });
+			const result = await client.db('turqdb').collection('users').findOne({ _id: userID });
 			if (result) {
 				console.log(`Found a profile associated with UserID: '${userID}'`);
 				return result;
@@ -3171,19 +3171,19 @@ module.exports = {
 
 		// function for creating a pokemon in mongodb, returns new pokemon database object
 		async function createPokemon(client, newPokemon) {
-			const result = await client.db('turqdb').collection('pokémon').insertOne(newPokemon);
+			const result = await client.db('turqdb').collection('pokemon').insertOne(newPokemon);
 			console.log(`New Pokémon created with the following id: ${result.insertedId}`);
 			return result;
 		}
 
 		// function that determines the wild pokemon level (between 2 and 60) from the highest level in the player's party
 		async function levelcalc(client, profile) {
-			const slot1 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot1 });
-			const slot2 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot2 });
-			const slot3 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot3 });
-			const slot4 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot4 });
-			const slot5 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot5 });
-			const slot6 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.PartySlot6 });
+			const slot1 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.party[0] });
+			const slot2 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.party[1] });
+			const slot3 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.party[2] });
+			const slot4 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.party[3] });
+			const slot5 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.party[4] });
+			const slot6 = await client.db('turqdb').collection('pokemon').findOne({ _id: profile.party[5] });
 
 			let count = 0;
 			const levels = [];
@@ -3227,7 +3227,7 @@ module.exports = {
 		}
 
 		async function updateProfileByUserID(client, userID, updatedProfile) {
-			const result = await client.db('turqdb').collection('profiles').updateOne(
+			const result = await client.db('turqdb').collection('users').updateOne(
 				{ _id: userID },
 				{ $set: updatedProfile },
 			);

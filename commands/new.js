@@ -1,4 +1,4 @@
-const { User, Pokemon, DexEntry } = require("../models");
+const { User, Pokemon, DexEntry } = require('../models');
 
 module.exports = {
 	name: 'new',
@@ -37,7 +37,7 @@ module.exports = {
 						// cannot use findById here because _id is expected to be an ObjectId type
 						const user = await User.findById(userID);
 
-						// if no mathcing profile is found, continue with profile creation
+						// if no matching profile is found, continue with profile creation
 						if (!user) {
 							// convert starter pokemon name to lower case, replace underscores with spaces in names
 							const pokemon = args[4].toLowerCase();
@@ -46,16 +46,19 @@ module.exports = {
 							const rival = args[6].replace(/_/g, ' ');
 
 							// set rival starter pokemon
-							let rivalstarter = null;
-							switch(pokemon){
-								case "spraylet":
-									rivalStarter = "acafia"; break;
-								case "crocoal":
-									rivalStarter = "spraylet"; break;
-								case "acafia":
-									rivalStarter = "crocoal"; break;
-								 default:
-									  throw "invalid starter";
+							let rivalStarter = null;
+							switch(pokemon) {
+							case 'spraylet':
+								rivalStarter = 'acafia';
+								break;
+							case 'crocoal':
+								rivalStarter = 'spraylet';
+								break;
+							case 'acafia':
+								rivalStarter = 'crocoal';
+								break;
+							default:
+								throw 'Invalid Starter';
 							}
 
 							// determine Gender, HP, Ability, Nature, Moves, and Shininess of Starter
@@ -77,11 +80,12 @@ module.exports = {
 							const shininess = det_shiny();
 							console.log(`Is the Pokemon shiny?: ${shininess}`);
 
-							const dexEntry = await DexEntry.findOne({name: args[4]})
+							const dexEntry = await DexEntry.findOne({ name: args[4] });
 
 							// create new database entry for specified starter pokemon
-							const starter = await Pokemon.create({ 
+							const starter = await Pokemon.create({
 								pokemon: dexEntry._id,
+								nickname: nname,
 								level: 5,
 								gender: gend,
 								currentHP: stats[0],
@@ -92,39 +96,34 @@ module.exports = {
 								nature: nature.name,
 								natureMultipliers: nature.mult,
 								heldItem: 'None',
-								nickname: nname,
 								currentTrainer: trainer,
 								OT: trainer,
 								moves: current_ms,
 								exp: 0,
-								shiny: shininess === "Yes",
+								shiny: shininess,
 							});
 
 							// create new database entry for tagged user, assigns new starter's pokemon ID to PartySlot1
 							const newUser = await User.create({
 								_id: userID,
 								username: taggedUser.user.username,
-							    firstName: trainer.split(" ")[0],
-							    lastName: trainer.split(" ")[1],
-    							age: parseInt(args[2]),
+								firstName: trainer.split(' ')[0],
+								lastName: trainer.split(' ')[1],
+								age: parseInt(args[2]),
 								gender: args[3],
 								money: 1000,
 								badges: [],
 								keyItems: [],
+								generalItems: [{ name: 'Oran Berry', quantity: 1 }],
+								pokeBalls: [{ name: 'Poké Ball', quantity: 5 }],
 								tms: [],
 								hms: [],
 								party: [starter],
-								badges: [],
-								keyItems: [],
-								generalItems: [{name: 'Oran Berry', quantity: 1}],
-								pokeBalls: [{name: 'Poké Ball', quantity: 5}],
-								tms: [],
-								hms: [],
 								rival: {
 									name: rival,
 									age: args[7],
 									render: args[8],
-									team: [rivalstarter]
+									team: [rivalStarter],
 								},
 								visited: ['leddintown'],
 								currentLocation: 'Leddin Town',
@@ -132,10 +131,12 @@ module.exports = {
 								battleID: '',
 							});
 							console.log(newUser);
-							message.reply("profile created");
-							return; // we can repurpose the code below maybe, break out for now
+							message.reply('profile created!');
+							return;
+
+							// we can repurpose the code below maybe, break out for now
 							// find profile and adventure categories, create new channels under them for new player
-							const profilecat = message.guild.channels.cache.find(cat=> cat.name === 'RPG Profiles');
+							/* const profilecat = message.guild.channels.cache.find(cat=> cat.name === 'RPG Profiles');
 							const adventurecat = message.guild.channels.cache.find(cat=> cat.name === 'Adventures');
 							const newprofile = await message.guild.channels.create(`${taggedUser.user.username}-profile`, {
 								type: 'text',
@@ -225,7 +226,7 @@ module.exports = {
 
 							message.channel.send(`>>> Profile successfully created for ${taggedUser.user.username}. \
 								\nNew user profile channel created at <#${newprofile.id}>. \
-								\nNew user adventure channel created at <#${newadv.id}>.`);
+								\nNew user adventure channel created at <#${newadv.id}>.`); */
 						}
 						// exit out if profile was found matching user discord ID
 						else {
@@ -243,6 +244,5 @@ module.exports = {
 		// run main function
 		main().catch(console.error);
 
-		}
-
+	},
 };
