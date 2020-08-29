@@ -1,18 +1,12 @@
 import React from 'react';
-import { MongoClient } from "mongodb"
 import './index.css';
-
-const conf = {
-	"uri": "mongodb+srv://turqbot:turquoise2007@turqdb-30xsx.gcp.mongodb.net/turqdb?retryWrites=true&w=majority"
-}
-
 
 class Profile extends React.Component {
 
 	async componentDidMount(){
-		const response = await fetch(`http://localhost:3001/profile/${"129072955929001984"}`);
+		const response = await fetch(`http://localhost:3001/profile/${this.props.match.params.id}`);
 		const { data } = await response.json();
-		this.setState({data})
+		this.setState({data});
 		console.log(data);
 	}
 
@@ -53,7 +47,7 @@ class Profile extends React.Component {
 						<li>Name: {rival.name}</li>
 						<li>Age: {rival.age}</li>
 						<li>Gender: {rival.gender}</li>
-						{rival.team.map(name=><img src={imgUrl(name)} alt={name} style={{width: 60}}/>)}
+						{rival.team.map((name, i)=><img key={i} src={imgUrl(name)} alt={name} style={{width: 60}}/>)}
 					</ul>
 				</div>
 			</div>
@@ -82,7 +76,7 @@ class Profile extends React.Component {
 					<h2>Party</h2><hr />
 					<ul>
 						{party.map(pkmn => <li key={pkmn._id}>
-							<ul>
+							{pkmn.pokemon && (<ul>
 								<a href={dexUrl(pkmn.pokemon.name)}>
 								<img alt={pkmn.pokemon.name} title={pkmn.pokemon.name}
 									src={imgUrl(pkmn.pokemon.name)}/></a>
@@ -96,7 +90,7 @@ class Profile extends React.Component {
 								<li>OT: {pkmn.OT}</li>
 								<li>Moves: {pkmn.moves.join(', ')}</li>
 								<li>EXP: {pkmn.exp}%</li>
-							</ul>
+							</ul>)}
 						</li>)}
 					</ul>
 				</div>
