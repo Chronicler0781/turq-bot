@@ -1,4 +1,4 @@
-module.exports = function gen_pokemon(pkmn_name, lvl, item, owner) {
+module.exports = function gen_pokemon(pkmn_name, nname, lvl, item, owner, userID) {
 	// name: gen_pokemon.js
 	// description: This function creates a database entry for a wild or trainer-owned Pokémon
 
@@ -31,23 +31,23 @@ module.exports = function gen_pokemon(pkmn_name, lvl, item, owner) {
 
 	// create new database entry for specified starter pokemon
 	const newPokemon = {
-		Pokémon: pkmn_name.charAt(0).toUpperCase() + pkmn_name.slice(1),
-		Level: lvl,
-		Gender: gend,
-		CurrentHP: stats[0],
-		MaxHP: stats[0],
-		Status: 'None',
-		AbilityNo: ability.number,
-		Ability: ability.name,
-		Nature: nature.name,
-		NatureMultipliers: nature.mult,
-		HeldItem: item,
-		Nickname: 'None',
-		CurrentTrainer: owner,
+		pokemon: pkmn_name.charAt(0).toUpperCase() + pkmn_name.slice(1),
+		nickname: nname,
+		level: lvl,
+		gender: gend,
+		currentHP: stats[0],
+		maxHP: stats[0],
+		status: 'None',
+		// abilityNo: ability.number,
+		ability: ability.name,
+		nature: nature.name,
+		// natureMultipliers: nature.mult,
+		heldItem: item,
+		currentTrainer: userID,
 		OT: owner,
-		Moves: current_ms,
-		Experience: 0,
-		Shiny: shininess,
+		moves: current_ms,
+		exp: 0,
+		shiny: shininess,
 	};
 
 	return newPokemon;

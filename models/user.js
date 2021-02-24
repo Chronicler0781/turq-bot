@@ -5,6 +5,7 @@ module.exports = new Schema({
 	username: String,
 	firstName: String,
 	lastName: String,
+	nickname: String,
 	age: Number,
 	gender: 'Male' | 'Female' | 'Other' | null,
 	money: Number,
@@ -19,19 +20,22 @@ module.exports = new Schema({
 		quantity: Number,
 	}],
 	tms: [String],
-	hms: [String],
 	party: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Pokemon',
 	}],
 	rival: {
-		name: String,
+		firstName: String,
+		lastName: String,
+		nickname: String,
 		age: Number,
 		gender: 'Male' | 'Female' | 'Other' | null,
 		team: [String],
 	},
 	visited: [String],
 	currentLocation: String,
-	area: String,
-	battleID: String,
-});
+	battleID: { 
+		type: Schema.Types.Mixed,
+		ref: 'Battle'
+	}
+}, { collection: 'users' });

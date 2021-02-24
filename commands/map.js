@@ -1,43 +1,42 @@
+const { User, Location } = require('../models');
+
 module.exports = {
 	name: 'map',
 	description: 'this command allows a user to travel to pull up a map of their location or another specified location in New Logora',
 
 	execute(Discord, message, args, fs) {
 
-		// add client commands for mongodb
-		const MongoClient = require('mongodb').MongoClient;
+		// add canvas tools
 		const { createCanvas, Image } = require('canvas');
 
 		async function main() {
 
-			// connect to mongodb
-			const conf = require('../config.json');
-			const client = new MongoClient(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
 			try {
-				await client.connect();
-
 				// retrieve user profile from database
 				const userID = message.author.id;
-				const profile = await findProfilebyID(client, userID);
+				let profile = await User.findOne({ _id: userID });
 
 				if (profile.battleID == '' || profile.battleID == 'None') {
 
-					// Only continue there are none, 1, or 2 arguments
+					// Only continue if there are none, 1, or 2 arguments
 					if (!args.length || args.length < 3) {
 
-						let location = [];
+						let location = null;
 
 						// if no arguments, get current location of player
 						if (!args.length) {
-							const locName = profile.currentLocation;
-							location = await findLocationbyName(client, locName);
+							const locID = profile.currentLocation;
+							location = await Location.findOne({ _id: locID })
+        						.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs'});
 						}
-						// if 1 argument, get location specifified
+						// if 1 argument, get location specified
 						else if (args.length == 1) {
 
 							// if one of below locations specified, set default area
-							let tempArea = '';
+							let tempArea = null;
+							if (args[0] == 'routenl1') {
+								tempArea = 'south';
+							}
 							if (args[0] == 'dingbatcave') {
 								tempArea = 'uppercaverns';
 							}
@@ -60,71 +59,65 @@ module.exports = {
 								tempArea = 'streets';
 							}
 
-							// find location from argument. If not found, search with alternate location name
-							location = await findLocationbySimpNames(client, args[0], tempArea);
-							if (typeof location == 'undefined') {
-								location = await findLocationbyAltNames(client, args[0], tempArea);
+							// find location from argument
+							location = await Location.findOne({locNames: args[0], areaName: tempArea })
+								.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs'});
+							if (location === null) {
+								location = await Location.findOne({_id: args[0]})
+									.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs'});
 							}
+
 						}
 
-						// if 2 arguments, get location / area specified. If not found, search with alternate location name
+						// if 2 arguments, get location / area specified
 						else if (args.length == 2) {
-							location = await findLocationbySimpNames(client, args[0], args[1]);
-							if (typeof location == 'undefined') {
-								location = await findLocationbyAltNames(client, args[0], args[1]);
-							}
+							location = await Location.findOne({ locNames: args[0], areaName: args[1]})
+								.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs'});	
 						}
 
 						// Set variables/constants for parsing accessTo lists
-						let splitLocArea = '';
-						let altLocs = '';
-						let tempLoc = [];
 						const access = [];
 						const trcode = [];
+						const numEmoji = [];
+						const emojiCharacters = require('../scripts/emojiCharacters');
 
-						// onyl set valid to true if location was not found from entered arguments
+						// only set valid to true if location was not found from entered arguments
 						let valid = false;
-						if (typeof location != 'undefined') {
+						if (typeof location !== 'undefined' && location !== null) {
 							valid = true;
 
 							// For each location entry in the accessTo array of the original location
-							for (let i = 0; i < location.accessTo.length; i++) {
+							for (let i = 0; i < location.accessedBy.length; i++) {
 
-								// check if location has an area by the underscore character, store location/area names in splitLocArea array
-								if (location.accessTo[i].includes('_')) {
-									splitLocArea = location.accessTo[i].split(/_+/);
+								// convert index number to emoji for numbered location list in access
+								numEmoji[i] = emojiCharacters[i+1];
 
-									// check if location has an alternate name, store names in altLocs array
-									if (splitLocArea[0].includes('/')) {
-										altLocs = splitLocArea[0].split(/\/+/);
+								// create temporary object for location in accessTo list, populate access location name and travel code arrays
+								access[i] = numEmoji[i] + ' ' + location.accessedBy[i].name;
 
-										// grab location and store location name in access array, store name/alt name and area in trcode array
-										tempLoc = await findLocationbySimpNames(client, altLocs[0], splitLocArea[1]);
-										access[i] = tempLoc.loc;
-										trcode[i] = '(' + tempLoc.simpLoc + ' or ' + tempLoc.altSimpLoc + ') ' + tempLoc.simpArea;
-									}
-									// if no alternate name, just store location and area names
-									else {
-										tempLoc = await findLocationbySimpNames(client, splitLocArea[0], splitLocArea[1]);
-										access[i] = tempLoc.loc;
-										trcode[i] = tempLoc.simpLoc + ' ' + tempLoc.simpArea;
-									}
-
+								if (typeof location.accessedBy[i].areaName != 'undefined') {
+									trcode[i] = location.accessedBy[i].locNames[0] + ' ' + location.accessedBy[i].areaName;
 								}
-								// check if location has an alt name by the forward slash character, store location name/alt names
-								else if (location.accessTo[i].includes('/')) {
-									altLocs = location.accessTo[i].split(/\/+/);
-									tempLoc = await findLocationbySimpNames(client, altLocs[0], '');
-									access[i] = tempLoc.loc;
-									trcode[i] = tempLoc.simpLoc + ' or ' + tempLoc.altSimpLoc;
+								else if (typeof location.accessedBy[i].locNames[0] != 'undefined') {
+									trcode[i] = location.accessedBy[i].locNames[0];
 								}
-								// if no alt name,, store location name
 								else {
-									tempLoc = await findLocationbySimpNames(client, location.accessTo[i], '');
-									access[i] = tempLoc.loc;
-									trcode[i] = tempLoc.simpLoc;
+									trcode[i] = location.accessedBy[i]._id;
 								}
 							}
+
+							// Add flying to travel options if appplicable
+							if (location.usableHMs.indexOf('fly') != -1) {
+								numEmoji.push(emojiCharacters.a);
+								access.push(emojiCharacters.a + ' ' + 'Altaria Airways');
+							}
+
+							// Add flying to travel options if appplicable
+							if (typeof location.ferry[0] !== 'undefined') {
+								numEmoji.push(emojiCharacters.f);
+								access.push(emojiCharacters.f + ' ' + 'Neptune Ferry');
+							}
+
 						}
 
 						// if valid location has been determined, use canvas to generate merged image
@@ -136,7 +129,14 @@ module.exports = {
 							// load images for map and location tag images
 							let imagesLoaded = 0;
 							const img1 = await loadImage('./images/map/newlogora.png', merge);
-							const img2 = await loadImage(`./images/map/${location.simpLoc}.png`, merge);
+
+							// if location has multiple names or an area, use first locNames value for matching to png image, otherwise use location id
+							let img2 = null;
+							if (typeof location.locNames[0] != 'undefined') {
+								img2 = await loadImage(`./images/map/${location.locNames[0]}.png`, merge);
+							} else {
+								img2 = await loadImage(`./images/map/${location._id}.png`, merge);
+							}
 
 							// run merge function
 							await merge();
@@ -167,13 +167,66 @@ module.exports = {
 							// create discord embedded message with image of current location, accessible locations, and their travel codes listed.
 							const mapEmbed = new Discord.MessageEmbed()
 								.setColor('#0099ff')
-								.setTitle(`New Logora - ${location.loc}`)
-								.addField('__Access To:__', `-${access.join('\n-')}`, true)
+								.setTitle(`New Logora - ${location.name}`)
+								.addField('__Travel Options:__', `${access.join('\n')}`, true)
 								.addField('__Travel Code:__', `${trcode.join('\n')}`, true)
 								.attachFiles(['./images/temp.png'])
 								.setImage('attachment://temp.png');
 
-							message.channel.send(mapEmbed);
+							await message.channel.send(mapEmbed)
+							.then(embed => {
+								for (const emoji of numEmoji) {
+									embed.react(emoji);
+								}
+								const filter = ( reaction, user) => {
+									return numEmoji.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
+								}
+								return { embed, filter }
+							})
+							.then(async ({ embed, filter }) => {
+								embed.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
+								.then(async collected => {
+									for (let i = 0; i < numEmoji.length; i++) {
+
+										if (numEmoji[i] === collected.first().emoji.name && numEmoji[i] !== emojiCharacters.a && numEmoji[i] !== emojiCharacters.f ) {
+											
+											let updatedProfile = {
+												currentLocation: location.accessedBy[i]._id,
+												visited: profile.visited
+											}
+											if (updatedProfile.visited.indexOf(location.accessedBy[i]._id) === -1) {
+												updatedProfile.visited.push(location.accessedBy[i]._id);
+											}
+											console.log(updatedProfile);
+											profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, { new: true});
+											message.channel.send(`You have successfully traveled to ${location.accessedBy[i].name}.`);
+											console.log('New player location set as ' + profile.currentLocation);
+											// Add badge req, revivalist job req, and surf checks
+											return;
+										}
+
+										else if (numEmoji[i] === collected.first().emoji.name && numEmoji[i] !== emojiCharacters.f) {
+											message.channel.send(`Unfortunately, you haven't unlocked that service yet. Please visit Szlazan City after obtaining 4 badges`)
+											console.log('Fly Options');
+											return;
+											// Add fly check
+										}
+
+										else if (numEmoji[i] === collected.first().emoji.name) {
+											message.channel.send(`The Neptune Ferry service is coming soon to a port near you!`)
+											console.log('Ferry Options');
+											return;
+											// Add ferry check
+										}
+									}
+								})
+								.catch((error) => {
+									console.log(error)
+									message.channel.send('Your command has timed out. Please start again.');
+								})
+
+							})
+
 						}
 						// if no valid area found, return error message
 						else {
@@ -197,59 +250,9 @@ module.exports = {
 			catch (e) {
 				console.error(e);
 			}
-			finally {
-				await client.close();
-			}
 		}
 
 		main().catch(console.error);
-
-		// function for searching a profile by the discord ID.
-		async function findProfilebyID(client, userID) {
-			const result = await client.db('turqdb').collection('users').findOne({ _id: userID });
-			if (result) {
-				console.log(`Found a profile associated with UserID: '${userID}'`);
-				return result;
-			}
-			else {
-				console.log(`No profile found with the UserID: '${userID}'`);
-			}
-		}
-
-		// function for searching a location by full name.
-		async function findLocationbyName(client, location) {
-			const result = await client.db('turqdb').collection('locations').findOne({ loc: location });
-			if (result) {
-				console.log(`Found a location associated with the name: '${location}'`);
-				return result;
-			}
-			else {
-				console.log(`No location found with the name: '${location}'`);
-			}
-		}
-
-		// function for searching a profile by the simple location and area names.
-		async function findLocationbySimpNames(client, loc, area) {
-			const result = await client.db('turqdb').collection('locations').findOne({ simpLoc: loc, simpArea: area });
-			if (result) {
-				console.log(`Found a location associated with the location/area names: '${loc} / ${area}'`);
-				return result;
-			}
-			else {
-				console.log(`No location found with the location/area names: '${loc} / ${area}'`);
-			}
-		}
-
-		async function findLocationbyAltNames(client, loc, area) {
-			const result = await client.db('turqdb').collection('locations').findOne({ altSimpLoc: loc, simpArea: area });
-			if (result) {
-				console.log(`Found a location associated with the location/area names: '${loc} / ${area}'`);
-				return result;
-			}
-			else {
-				console.log(`No location found with the location/area names: '${loc} / ${area}'`);
-			}
-		}
 
 	},
 };

@@ -10,28 +10,13 @@ module.exports = {
 			message.channel.send(`>>> Hello, I am Turq-Bot, your friendly neighborhood bot with the purpose of assisting new trainers of New Logora with their Pokémon adventure needs! \
 				\nMy prefix on this server is the ${command_prefix} key. To see explanations and examples of my commands, please type ${command_prefix}help followed by the desired command name. \
 				\n\nPlease see below for a full list of my commands! \
-				\n${command_prefix}check \
 				\n${command_prefix}dex \
-				\n${command_prefix}new *(Staff Only)* \
-				\n${command_prefix}server \
-				\n${command_prefix}user-info`);
+				\n${command_prefix}map \
+				\n${command_prefix}wild`);
 		}
 		else {
 			// if there are arguments, post help document depending on which command is specified
 			switch(args[0]) {
-
-			case 'check':
-				message.channel.send(`>>> Command: check \
-							\nArguments: profile \
-							\nDescription: check command followed by one of the listed arguments returns back profile info for the author or a user tagged at the end. \
-							\n\n__Example:__ \
-							\nUser: ${command_prefix}check profile @Turq-Bot \
-							\nTurq-Bot: \
-							\n   __Profile of Turq-Bot__ \
-							\n   **Name:** Turqy Botswath \
-							\n   **Age:** 0 \
-							\n   **Gender:** None`);
-				break;
 
 			case 'dex':
 				message.channel.send(`>>> Command: dex \
@@ -42,24 +27,21 @@ module.exports = {
 							\nTurq-Bot: http://turquoise.alteredorigin.net/pokemon/acafia/`);
 				break;
 
-			case 'new':
-				message.channel.send(`>>> Command: new \
-							\nSubcommand: profile \
+			case 'map':
+				message.channel.send(`>>> Command: map \
 							\nArguments: (separated by spaces) \
-							\n   1. Player name (multiple names separated by underscores) \
-							\n   2. Player age \
-							\n   3. Player gender \
-							\n   4. Starter Pokemon choice (i.e: Crocoal) \
-							\n   5. Starter Pokemon nickname (enter none if unnamed) \
-							\n   6. Rival name (multiple names separated by underscores) \
-							\n   7. Rival age \
-							\n   8. Rival gender \
-							\n   9. Tagged User \
-							\nDescription: new command followed by profile, arguments 1-8, and then a user tag will create a new profile for the tagged user and generate a starter Pokémon in slot 1. \
-							\nComing soon: profile creation will generate a populated profile channel for the player, as well as a fresh adventure channel. \
+							\n   1. Location Name (optional, entered as one word, all undercase) \
+							\n   2. Area Name (optional, entered as one work, all undercase)
+							\nDescription: map command will return current location of player and provide react options for travel. map command followed optionally by location name (and optionally area name) will return location specificed and travel options if applicable. \
 							\n\n__Example:__ \
-							\nUser: ${command_prefix}new profile Turqy_Botswath 0 None Crocoal Fireboy Chronicler 26 Male Turq-Bot#8380 \
-							\nTurq-Bot: Profile successfully created for Turq-Bot.`);
+							\nUser: ${command_prefix}map leddintown`);
+				break;
+
+			case 'wild':
+				message.channel.send(`>>> Command: wild \
+							\nDescription: wild command will enter the player into a wild Pokémon battle in the area they are currently in, otherwise an error message will be returned if not possible.\
+							\n\n__Example:__ \
+							\nUser: ${command_prefix}wild`);
 				break;
 			}
 		}
