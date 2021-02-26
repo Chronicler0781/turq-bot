@@ -177,9 +177,12 @@ module.exports = {
 							money: 1000,
 							badges: [],
 							keyItems: [],
+							revivalistJobsCompleted: [],
 							generalItems: [{ name: 'Oran Berry', quantity: 1 }],
 							pokeBalls: [{ name: 'Poké Ball', quantity: 5 }],
 							tms: [],
+							mapStatus: 'closed',
+							services: [],
 							party: [starter],
 							rival: {
 								firstName: answerList[6],
