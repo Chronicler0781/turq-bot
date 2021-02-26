@@ -2,15 +2,16 @@ const { User, Location } = require('../models');
 
 module.exports = {
 	name: 'map',
-	description: 'this command allows a user to travel to pull up a map of their location or another specified location in New Logora',
+	description: 'this command allows a user to travel to pull up a map of their location or another specified location in New Logora, and travel to/from that location',
 
 	execute(Discord, message, args, fs) {
 
-		// add canvas tools
+		// add requirements for mapcommand
 		const { createCanvas, Image } = require('canvas');
 		const emojiCharacters = require('../scripts/emojiCharacters');
 		const travelCheck = require('./functions/travelCheck');
 
+		// Main function for map command
 		async function main() {
 
 			try {
@@ -30,7 +31,7 @@ module.exports = {
 					// Only continue if there are none, 1, or 2 arguments
 					if (!args.length || args.length < 3) {
 
-						// if no arguments, get current location of player
+						// if no arguments, get current location of player and populate access object with option information
 						if (!args.length) {
 							const locID = profile.currentLocation;
 							location = await Location.findOne({ _id: locID })
@@ -91,7 +92,7 @@ module.exports = {
 							}
 						}
 
-						// if 1 argument, get location specified
+						// if 1 argument, get location specified and populate access object with option information
 						else if (args.length == 1) {
 
 							// if one of below locations specified, set default area
@@ -198,7 +199,7 @@ module.exports = {
 							}
 						}
 
-						// if 2 arguments, get location / area specified
+						// if 2 arguments, get location / area specified and populate access object with option information
 						else if (args.length == 2) {
 							location = await Location.findOne({ locNames: args[0], areaName: args[1]})
 								.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs'});	
@@ -239,7 +240,7 @@ module.exports = {
 							}
 						}
 
-						// if valid location has been determined, use canvas to generate merged image
+						// if valid location has been determined, open map menu
 						if (valid == true) {
 
 							// Set map status to open
@@ -340,7 +341,7 @@ module.exports = {
 											else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === emojiCharacters.a) {
 												if (profile.currentLocation === access.locID[i]) {
 													if (access.canAccess[i]) {
-														await getFlyList(profile, embed);
+														await openFlyMenu(profile, location);
 														break;
 													}
 													else {
@@ -376,7 +377,7 @@ module.exports = {
 											// Handle reaction for ferry 
 											else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === emojiCharacters.f) {
 												if (profile.currentLocation === access.locID[i]) {
-													await getFerryList(profile, location);
+													await openFerryMenu(profile, location);
 													break;
 												}
 												else {
@@ -423,6 +424,7 @@ module.exports = {
 							})
 
 						}
+
 						// if no valid area found, return error message
 						else {
 							message.channel.send('>>> Error: The location or area you specified cannot be found. Please check your spelling and try again.');
@@ -453,11 +455,13 @@ module.exports = {
 			}
 		}
 
+		// Call main function
 		main().catch(console.error);
 
+		// Function for generating menu of Flying options, and then processing menu change or location choice.
+		async function openFlyMenu(profile, location) {
 
-		// Function for posting embed with list of Flying options, and then processing location choice.
-		async function getFlyList(profile) {
+			const loadMessage = await message.channel.send('>>> Loading Locations...');
 
 			const brolLocations = { id: [], name: [], embedMsg: [] };
 			const kroneaLocations = { id: [], name: [], embedMsg: [] };
@@ -581,37 +585,46 @@ module.exports = {
 
 			const flyOptionSet1Embed = new Discord.MessageEmbed()
 				.setColor('#0099ff')
-				.setTitle(`Altaria Airways - Available Destinations`)
+				.setAuthor('Altaria Airways', 'attachment://altariaairways.png')
+				.setTitle(`Available Destinations from ${location.name}`)
 				.addField('__Brol Island:__', `${brolLocations.embedMsg.join('\n')}`, true)
 				.addField('__Kronea Island:__', `${kroneaLocations.embedMsg.join('\n')}`, true)
 				.addField('__Tilnen Island (1/2):__', `${tilnenLocations1.embedMsg.join('\n')}`, true)
+				.attachFiles(['./images/icons/altariaairways.png'])
 				.setFooter('React with ▶️ for more options, or ❎ to close your map.');
 
 			const flyOptionSet2Embed = new Discord.MessageEmbed()
 				.setColor('#0099ff')
-				.setTitle(`Altaria Airways - Available Destinations`)
+				.setAuthor('Altaria Airways', 'attachment://altariaairways.png')
+				.setTitle(`Available Destinations from ${location.name}`)
 				.addField('__Tilnen Island (2/2):__', `${tilnenLocations2.embedMsg.join('\n')}`, true)
 				.addField('__Xyrbyle Island (1/2):__', `${xybryleLocations1.embedMsg.join('\n')}`, true)
+				.attachFiles(['./images/icons/altariaairways.png'])
 				.setFooter('React with ◀️/▶️ for more options, or ❎ to close your map.');
 
 			const flyOptionSet3Embed = new Discord.MessageEmbed()
 				.setColor('#0099ff')
-				.setTitle(`Altaria Airways - Available Destinations`)
+				.setAuthor('Altaria Airways', 'attachment://altariaairways.png')
+				.setTitle(`Available Destinations from ${location.name}`)
 				.addField('__Xyrbyle Island (2/2):__', `${xybryleLocations2.embedMsg.join('\n')}`, true)
 				.addField('__Krtuso Island:__', `${krtusoLocations.embedMsg.join('\n')}`, true)
 				.addField('__Adar Zilira:__', `${adarziliraLocations.embedMsg.join('\n')}`, true)
+				.attachFiles(['./images/icons/altariaairways.png'])
 				.setFooter('React with ◀️ to go back, or ❎ to close your map.');
 
 			let decision = false;
 			let optionSet = 1;
 			let data = null;
+			firstRun = true;
 
 			while (decision === false) {
 				switch (optionSet) {
 					case 1:
+						if (firstRun) loadMessage.delete();
 						data = await runFlyEmbed(flyOptionSet1Embed, locationEmojis1, brolLocations, kroneaLocations, tilnenLocations1, optionSet)
 						optionSet = data.option;
 						decision = data.decision;
+						firstRun = false;
 						break;
 
 					case 2:
@@ -628,7 +641,6 @@ module.exports = {
 				}
 			}
 		}
-
 
 		// Function for retrieving full list of emoji choices (numbers + letters) and locations in game
 		function getListArrays() {
@@ -650,7 +662,7 @@ module.exports = {
 			return { locations: locationList, emojis: emojiList }
 		}
 
-		// Function for posting emded with fly options for a set of three islands
+		// Function for posting emded with fly options for a set of three islands, returning new option or location choice
 		async function runFlyEmbed(flyEmbed, emojiList, island1, island2, island3, oldOption) {
 			let decision = null;
 
@@ -722,8 +734,8 @@ module.exports = {
 				})
 		}
 
-		// Function for posting embed with list of Ferry options, adn then processing choice and payment
-		async function getFerryList(profile, location) {
+		// Function for generating menu of Ferry options, adn then processing choice and payment
+		async function openFerryMenu(profile, location) {
 
 			const brolFerries = [];
 			const kroneaFerries = [];
@@ -766,12 +778,14 @@ module.exports = {
 			ferryNumEmoji.push('❎');
 			const ferryEmbed = new Discord.MessageEmbed()
 				.setColor('#0099ff')
-				.setTitle(`Neptune Ferry Port Locations`)
+				.setAuthor('Neptune Ferry', 'attachment://neptuneferry.png')
+				.setTitle(`Available Ports from ${location.name}`)
 				.addField('__Brol Island:__', `${brolFerries.join('\n')}`, true)
 				.addField('__Kronea Island:__', `${kroneaFerries.join('\n')}`, true)
 				.addField('__Tilnen Island:__', `${tilnenFerries.join('\n')}`, true)
 				.addField('__Xybryle Island:__', `${xybryleFerries.join('\n')}`, true)
 				.addField('__Krtuso Island:__', `${krtusoFerries.join('\n')}`, true)
+				.attachFiles(['./images/icons/neptuneferry.png'])
 				.setFooter('React with ❎ to close your map.');
 
 			await message.channel.send(ferryEmbed)
