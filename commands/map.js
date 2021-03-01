@@ -6,7 +6,7 @@ module.exports = {
 
 	execute(Discord, message, args, fs) {
 
-		// add requirements for mapcommand
+		// add requirements for map command
 		const { createCanvas, Image } = require('canvas');
 		const emojiCharacters = require('../scripts/emojiCharacters');
 		const travelCheck = require('./functions/travelCheck');
@@ -653,76 +653,69 @@ module.exports = {
 			nameList = [''].concat(island1.name.concat(island2.name.concat(island3.name)));
 			emojiList.push('❎');
 
-			return { option, decision } = await message.channel.send(flyEmbed)
-				.then(async embed => {
-					const filter = ( reaction, user) => {
-						return emojiList.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
+			const embed = await message.channel.send(flyEmbed);
+
+			for (const emoji of emojiList) {
+				if (populateReacts)
+					embed.react(emoji);
+			}
+
+			try {
+				const filter = ( reaction, user) => {
+					return emojiList.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
+				}
+				const collected = await embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] });			
+				for (let i = 0; i < emojiList.length; i++) {
+					if (emojiList[i] === collected.first().emoji.name && emojiList[i] !== '▶️' && emojiList[i] !== '◀️' && emojiList[i] !== '❎') {
+						let j = null;
+						if (emojiList[1] === '▶️') j = i - 1;
+						else j = i;
+						let updatedProfile = {
+							currentLocation: idList[j],
+							mapStatus: 'closed'
+						}
+						const profile = await User.findOneAndUpdate({_id: message.author.id}, updatedProfile, { new: true});
+						message.channel.send(`>>> You have arrived at your destination: ${nameList[j]}. Thank you for flying with Altaria Airways!`);
+						console.log('New player location set as ' + profile.currentLocation);
+						populateReacts = false;
+						decision = true;
+						break;
 					}
-
-					let {option, decision } = embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
-						.then(async collected => {
-							for (let i = 0; i < emojiList.length; i++) {
-								if (emojiList[i] === collected.first().emoji.name && emojiList[i] !== '▶️' && emojiList[i] !== '◀️' && emojiList[i] !== '❎') {
-									let j = null;
-									if (emojiList[1] === '▶️') j = i - 1;
-									else j = i;
-
-									let updatedProfile = {
-										currentLocation: idList[j],
-										mapStatus: 'closed'
-									}
-									const profile = await User.findOneAndUpdate({_id: message.author.id}, updatedProfile, { new: true});
-									message.channel.send(`>>> You have arrived at your destination: ${nameList[j]}. Thank you for flying with Altaria Airways!`);
-									console.log('New player location set as ' + profile.currentLocation);
-									populateReacts = false;
-									decision = true;
-									break;
-								}
-								else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '▶️') {
-									if (oldOption === 1) option = 2; 
-									if (oldOption === 2) option = 3;
-									populateReacts = false;
-									decision = false;
-									console.log(option);
-									break;
-								}
-								else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '◀️') {
-									if (oldOption === 2) option = 1; 
-									if (oldOption === 3) option = 2;
-									populateReacts = false;
-									decision = false;
-									break;
-								}
-								else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '❎') {
-									message.channel.send('>>> Map closed.');
-									await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
-									decision = true;
-									break;
-								}
-							}
-							console.log('1. ' + option + decision);
-							return { option: option, decision: decision }
-						})
-						.catch((error) => {
-							console.log(error)
-							message.channel.send('>>> Error: Your command has timed out. Please start again.')
-							.then(async () => {
-								await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
-							});
-							populateReacts = false;
-							decision = true;
-							console.log('Catch: ' + option + ' ' + decision);
-							return { option, decision };
-						})
+					else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '▶️') {
+						if (oldOption === 1) option = 2; 
+						if (oldOption === 2) option = 3;
+						populateReacts = false;
+						decision = false;
+						console.log(option);
+						break;
+					}
+					else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '◀️') {
+						if (oldOption === 2) option = 1; 
+						if (oldOption === 3) option = 2;
+						populateReacts = false;
+						decision = false;
+						break;
+					}
+					else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '❎') {
+						message.channel.send('>>> Map closed.');
+						await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
+						decision = true;
+						break;
+					}
+				}
+				console.log('1. ' + option + decision);
+			}
+			catch (error) {
+				console.log(error)
+				await message.channel.send('>>> Error: Your command has timed out. Please start again.')
+				await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
+				populateReacts = false;
+				decision = true;
+				console.log('Catch: ' + option + ' ' + decision);
+			}
 					
-					for (const emoji of emojiList) {
-						if (populateReacts)
-						await embed.react(emoji);
-					}
-
-					console.log('2. ' + option + decision);
-					return { option, decision }
-				})
+			console.log('2. ' + option + decision);
+			return { option, decision };
 		}
 
 		// Function for generating menu of Ferry options, adn then processing choice and payment
