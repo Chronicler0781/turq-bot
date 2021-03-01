@@ -7,6 +7,7 @@ module.exports = {
 	execute(Discord, bot, message) {
 
 		const gen_pokemon = require('./pokeinfo/gen_pokemon.js');
+		const Sim = require('../../pokemon-showdown');
 
 		async function main() {
 
@@ -148,6 +149,18 @@ module.exports = {
 						.setTimestamp();
 
 					message.channel.send(wildBattleEmbed);
+
+					// stream = new Sim.BattleStream();
+
+					// (async () => {
+					// 	for await (const output of stream) {
+					// 		console.log(output);
+					// 	}
+					// })();
+
+					// stream.write(`>start {"formatid":"gen7randombattle"}`);
+					// stream.write(`>player p1 {"name":"${profile.firstName}"}`);
+					// stream.write(`>player p2 {"name":"${profile.rival.firstName}"}`);
 
 				}
 				else {

@@ -1,0 +1,51 @@
+update
+|t:|1614560224
+update
+|player|p1|Chron||
+sideupdate
+p1
+{
+    "active": [
+        {"moves": [
+            {"move":"Earthquake","id":"earthquake","pp":16,"maxpp":16,"target":"allAdjacent","disabled":false},
+            {"move":"Swords Dance","id":"swordsdance","pp":32,"maxpp":32,"target":"self","disabled":false},
+            {"move":"Outrage","id":"outrage","pp":16,"maxpp":16,"target":"randomNormal","disabled":false},
+            {"move":"Stone Edge","id":"stoneedge","pp":8,"maxpp":8,"target":"normal","disabled":false}
+        ],
+        "canMegaEvo":true}
+    ],
+    "side": {
+        "name":"Chron",
+        "id":"p1",
+        "pokemon":[
+            {"ident":"p1: Garchomp","details":"Garchomp, L80, F","condition":"304/304","active":true,"stats":{"atk":254,"def":198,"spa":174,"spd":182,"spe":209},"moves":["earthquake","swordsdance","outrage","stoneedge"],"baseAbility":"roughskin","item":"garchompite","pokeball":"pokeball","ability":"roughskin"},
+            {"ident":"p1: Togekiss","details":"Togekiss, L82, M","condition":"274/274","active":false,"stats":{"atk":87,"def":203,"spa":244,"spd":236,"spe":178},"moves":["airslash","nastyplot","roost","healbell"],"baseAbility":"serenegrace","item":"leftovers","pokeball":"pokeball","ability":"serenegrace"},
+            {"ident":"p1: Tangrowth","details":"Tangrowth, L80, F","condition":"291/291","active":false,"stats":{"atk":206,"def":246,"spa":222,"spd":126,"spe":126},"moves":["hiddenpowerfire60","leafstorm","rockslide","synthesis"],"baseAbility":"regenerator","item":"leftovers","pokeball":"pokeball","ability":"regenerator"},
+            {"ident":"p1: Mightyena","details":"Mightyena, L88, M","condition":"266/266","active":false,"stats":{"atk":209,"def":173,"spa":156,"spd":156,"spe":173},"moves":["suckerpunch","irontail","firefang","crunch"],"baseAbility":"moxie","item":"lifeorb","pokeball":"pokeball","ability":"moxie"},
+            {"ident":"p1: Stakataka","details":"Stakataka, L84","condition":"240/240","active":false,"stats":{"atk":268,"def":403,"spa":94,"spd":218,"spe":26},"moves":["gyroball","stealthrock","earthquake","stoneedge"],"baseAbility":"beastboost","item":"airballoon","pokeball":"pokeball","ability":"beastboost"},
+            {"ident":"p1: Florges","details":"Florges, L84, F","condition":"268/268","active":false,"stats":{"atk":114,"def":162,"spa":236,"spd":307,"spe":174},"moves":["wish","aromatherapy","moonblast","synthesis"],"baseAbility":"symbiosis","item":"leftovers","pokeball":"pokeball","ability":"symbiosis"}
+        ]
+    }
+}
+sideupdate
+p2
+|request|{"active":[{"moves":[{"move":"Focus Blast","id":"focusblast","pp":8,"maxpp":8,"target":"normal","disabled":false},{"move":"Earthquake","id":"earthquake","pp":16,"maxpp":16,"target":"allAdjacent","disabled":false},{"move":"Fire Blast","id":"fireblast","pp":8,"maxpp":8,"target":"normal","disabled":false},{"move":"Thunderbolt","id":"thunderbolt","pp":24,"maxpp":24,"target":"normal","disabled":false}]}],"side":{"name":"Luceta","id":"p2","pokemon":[{"ident":"p2: Magmortar","details":"Magmortar, L86, M","condition":"269/269","active":true,"stats":{"atk":213,"def":164,"spa":264,"spd":213,"spe":192},"moves":["focusblast","earthquake","fireblast","thunderbolt"],"baseAbility":"vitalspirit","item":"assaultvest","pokeball":"pokeball","ability":"vitalspirit"},{"ident":"p2: Articuno","details":"Articuno, L88","condition":"301/301","active":false,"stats":{"atk":154,"def":226,"spa":217,"spd":270,"spe":200},"moves":["roost","toxic","hurricane","freezedry"],"baseAbility":"pressure","item":"leftovers","pokeball":"pokeball","ability":"pressure"},{"ident":"p2: Skarmory","details":"Skarmory, L80, M","condition":"235/235","active":false,"stats":{"atk":174,"def":270,"spa":110,"spd":158,"spe":158},"moves":["stealthrock","bravebird","whirlwind","roost"],"baseAbility":"sturdy","item":"leftovers","pokeball":"pokeball","ability":"sturdy"},{"ident":"p2: Slurpuff","details":"Slurpuff, L86, M","condition":"280/280","active":false,"stats":{"atk":187,"def":197,"spa":195,"spd":178,"spe":173},"moves":["playrough","bellydrum","drainpunch","return102"],"baseAbility":"unburden","item":"sitrusberry","pokeball":"pokeball","ability":"unburden"},{"ident":"p2: Raikou","details":"Raikou, L84","condition":"288/288","active":false,"stats":{"atk":147,"def":174,"spa":241,"spd":216,"spe":241},"moves":["extrasensory","calmmind","substitute","thunderbolt"],"baseAbility":"pressure","item":"leftovers","pokeball":"pokeball","ability":"pressure"},{"ident":"p2: Illumise","details":"Illumise, L88, F","condition":"258/258","active":false,"stats":{"atk":87,"def":182,"spa":179,"spd":200,"spe":200},"moves":["roost","bugbuzz","encore","thunderwave"],"baseAbility":"prankster","item":"leftovers","pokeball":"pokeball","ability":"prankster"}]}}
+update
+|player|p2|Luceta||
+|teamsize|p1|6
+|teamsize|p2|6
+|gametype|singles
+|gen|7
+|tier|[Gen 7] Random Battle
+|rule|Sleep Clause Mod: Limit one foe put to sleep
+|rule|HP Percentage Mod: HP is shown in percentages
+|
+|t:|1614560224
+|start
+|split|p1
+|switch|p1a: Garchomp|Garchomp, L80, F|304/304
+|switch|p1a: Garchomp|Garchomp, L80, F|100/100
+|split|p2
+|switch|p2a: Magmortar|Magmortar, L86, M|269/269
+|switch|p2a: Magmortar|Magmortar, L86, M|100/100
+|turn|1

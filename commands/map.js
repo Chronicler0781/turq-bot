@@ -715,6 +715,7 @@ module.exports = {
 									await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
 									decision = true;
 									break;
+
 								}
 							}
 							console.log('1. ' + option + decision);
@@ -734,10 +735,10 @@ module.exports = {
 					
 					for (const emoji of emojiList) {
 						if (populateReacts === true)
-						await embed.react(emoji);
+							await embed.react(emoji);
 					}
 
-					console.log('2. ' + option + decision);
+					console.log('1. ' + option + decision);
 					return { option, decision }
 				})
 		}
