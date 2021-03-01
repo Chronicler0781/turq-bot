@@ -16,7 +16,7 @@ module.exports = {
 				const userID = message.author.id;
 				let profile = await User.findOne({_id: userID});
 
-				if (profile.battleID == '' || profile.battleID == 'None') {
+				if (!profile.battleID) {
 					
 					// choose a numbers between 1-100 to determine the wild slot, held item chance, and evolution stage chance
 					const wildSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
@@ -114,13 +114,13 @@ module.exports = {
 
 					// Handle embed emoji and pokemon images for gender-related parts
 					let gend_emoji = null;
-					if(wild_obj.gender == 'Male') {
+					if(wild_obj.gender === 'Male') {
 						gend_emoji = bot.emojis.cache.find(emoji => emoji.name === 'm_');
 						if (wildpoke === 'meowstic' || wildpoke === 'josuche') {
 							wildPokemonForm = wildPokemonForm + 'male';
 						}
 					}
-					else if(wild_obj.gender == 'Female') {
+					else if(wild_obj.gender === 'Female') {
 						gend_emoji = bot.emojis.cache.find(emoji => emoji.name === 'f_');
 						if (wildpoke === 'meowstic' || wildpoke === 'josuche') {
 							wildPokemonForm = wildPokemonForm + 'female';

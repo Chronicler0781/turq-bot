@@ -80,8 +80,8 @@ bot.on('message', message =>{
 
 
 // Set messageID for sign-up channel, and ID for trainer role to add
-const MessageNumber = '749970227898351648';
-const trainerRole = '749977507876438107';
+const messageNumber = conf.signupMessageID;
+const trainerRole = conf.trainerRoleID;
 
 // Watch for reactions to sign-up channel
 bot.on('messageReactionAdd', async (reaction, user) => {
@@ -151,7 +151,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 	if (reaction.message.partial) {
 		try {
 			const msg = await reaction.message.fetch();
-			if (msg.id === MessageNumber) {
+			if (msg.id === messageNumber) {
 				console.log('Cached');
 				createProfile();
 			}
@@ -161,7 +161,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 		}
 	}
 	else {
-		if (reaction.message.id === MessageNumber) {
+		if (reaction.message.id === messageNumber) {
 			console.log('Not a Partial');
 			createProfile();
 		}
