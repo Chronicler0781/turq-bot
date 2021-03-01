@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 module.exports = new Schema({
 	pokemon: {
-		type: Number, // dex id is the national dex #
+		type: String, // pokemon's lowercase name
 		ref: 'DexEntry',
 	},
 	nickname: String,

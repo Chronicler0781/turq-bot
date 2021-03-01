@@ -41,4 +41,4 @@ module.exports = new Schema({
 		data: Schema.Types.Mixed,
 	}],
 
-});
+}, { collection: 'dexentries' });

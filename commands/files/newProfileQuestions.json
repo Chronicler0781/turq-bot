@@ -1,0 +1,57 @@
+[
+	{
+        "question": "What is your character's first name? [Enter 'Quit' to exit profile creation]",
+        "phrase": "Your first ", 
+        "field": "name"
+    },
+    {
+        "question": "What is your character's last name? [Enter 'None' if not applicable, Enter 'Quit' to exit profile creation]",
+        "phrase": "Your last ", 
+        "field": "name"
+    },
+    {
+        "question": "What is your character's nickname? [Enter 'None' if not applicable, Enter 'Quit' to exit profile creation]",
+        "phrase": "Your nick", 
+        "field": "name"
+	},
+	{
+        "question": "What is your character's age (Must be between 10 and 90)? [Enter 'Quit' to exit profile creation]",
+        "phrase": "Your ", 
+        "field": "age"
+    },
+    {
+        "question": "What is your character's gender? [Enter 'Quit' to exit profile creation]",
+        "phrase": "Your ", 
+        "field": "gender"
+    },
+    {
+        "question": "What is your starter's nickname? [Enter 'None' if you do not wish to name your starter, Enter 'Quit' to exit profile creation]",
+        "phrase": "Your starter's nick", 
+        "field": "name"
+    },
+    {
+        "question": "What is your rival character's first name? [Enter 'Quit' to exit profile creation]",
+        "phrase": "Your rival's first ", 
+        "field" : "name"
+	},
+    {
+        "question": "What is your rival character's name? [Enter 'None' if not applicable, Enter 'Quit' to exit profile creation]",
+        "phrase": "Your rival's last ", 
+        "field" : "name"
+	},
+    {
+        "question": "What is your rival character's nickname? [Enter 'None' if not applicable, Enter 'Quit' to exit profile creation]",
+        "phrase": "Your rival's nick", 
+        "field" : "name"
+	},
+	{
+        "question": "What is your rival character's age (Must be between 10 and 90)? [Enter 'Quit' to exit profile creation]",
+        "phrase": "Your rival's ", 
+        "field": "age"
+    },
+    {
+        "question": "What is your rival character's gender? [Enter 'Quit' to exit profile creation]",
+        "phrase": "Your rival's ", 
+        "field": "gender"
+    }
+]
