@@ -664,24 +664,19 @@ module.exports = {
 
 		// Function for posting emded with fly options for a set of three islands, returning new option or location choice
 		async function runFlyEmbed(flyEmbed, emojiList, island1, island2, island3, oldOption) {
-			let decision = null;
+			let populateReacts = true;
 
 			idList = [''].concat(island1.id.concat(island2.id.concat(island3.id)));
 			nameList = [''].concat(island1.name.concat(island2.name.concat(island3.name)));
 			emojiList.push('❎');
 
 			return { option, decision } = await message.channel.send(flyEmbed)
-				.then(embed => {
-					for (const emoji of emojiList) {
-						embed.react(emoji);
-					}
+				.then(async embed => {
 					const filter = ( reaction, user) => {
 						return emojiList.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
 					}
-					return { embed, filter }
-				})
-				.then(async ({ embed, filter }) => {
-					return { option, decision } = embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+
+					let {option, decision } = embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
 						.then(async collected => {
 							for (let i = 0; i < emojiList.length; i++) {
 								if (emojiList[i] === collected.first().emoji.name && emojiList[i] !== '▶️' && emojiList[i] !== '◀️' && emojiList[i] !== '❎') {
@@ -696,12 +691,14 @@ module.exports = {
 									const profile = await User.findOneAndUpdate({_id: message.author.id}, updatedProfile, { new: true});
 									message.channel.send(`>>> You have arrived at your destination: ${nameList[j]}. Thank you for flying with Altaria Airways!`);
 									console.log('New player location set as ' + profile.currentLocation);
+									populateReacts = false;
 									decision = true;
 									break;
 								}
 								else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '▶️') {
 									if (oldOption === 1) option = 2; 
 									if (oldOption === 2) option = 3;
+									populateReacts = false;
 									decision = false;
 									console.log(option);
 									break;
@@ -709,6 +706,7 @@ module.exports = {
 								else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '◀️') {
 									if (oldOption === 2) option = 1; 
 									if (oldOption === 3) option = 2;
+									populateReacts = false;
 									decision = false;
 									break;
 								}
@@ -719,7 +717,8 @@ module.exports = {
 									break;
 								}
 							}
-							return { option, decision }
+							console.log('1. ' + option + decision);
+							return { option: option, decision: decision }
 						})
 						.catch((error) => {
 							console.log(error)
@@ -727,10 +726,19 @@ module.exports = {
 							.then(async () => {
 								await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
 							});
+							populateReacts = false;
 							decision = true;
 							console.log('Catch: ' + option + ' ' + decision);
 							return { option, decision };
 						})
+					
+					for (const emoji of emojiList) {
+						if (populateReacts === true)
+						await embed.react(emoji);
+					}
+
+					console.log('2. ' + option + decision);
+					return { option, decision }
 				})
 		}
 

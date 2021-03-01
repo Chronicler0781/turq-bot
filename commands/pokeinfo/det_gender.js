@@ -265,7 +265,7 @@ module.exports = function det_gender(pokemon) {
 		gratio = 'male50';
 		break;
 
-	case 'farfetchd':
+	case 'farfetch\'d':
 		gratio = 'male50';
 		break;
 

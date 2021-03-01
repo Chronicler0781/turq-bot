@@ -45,10 +45,6 @@ bot.on('message', message =>{
 
 	switch(command) {
 
-	case 'check':
-		bot.commands.get('check').execute(message, args);
-		break;
-
 	case 'dex':
 		bot.commands.get('dex').execute(message, args);
 		break;
@@ -61,8 +57,12 @@ bot.on('message', message =>{
 		bot.commands.get('map').execute(Discord, message, args, fs);
 		break;
 
-	case 'travel':
-		bot.commands.get('travel').execute(Discord, message, args);
+	case 'run':
+		bot.commands.get('run').execute(message);
+		break;
+
+	case 'set':
+		bot.commands.get('set').execute(message, args);
 		break;
 
 	case 'wild':
@@ -71,7 +71,7 @@ bot.on('message', message =>{
 
 	// if no command found, return message
 	default:
-		message.channel.send(`>>> The command, ${command}, is not recognized. Please check your spelling or enter '-help' for a full list of commands.`);
+		message.channel.send(`>>> The command, ${command}, is not recognized. Please check your spelling or enter '${prefix}help' for a full list of commands.`);
 		console.log('Command not found');
 		break;
 	}
