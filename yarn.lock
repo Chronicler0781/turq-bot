@@ -16,6 +16,11 @@
     combined-stream "^1.0.8"
     mime-types "^2.1.12"
 
+"@std/esm@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@std/esm/-/esm-0.26.0.tgz#c3ec3abdee95738e15ea7c695b7fee14ae529b81"
+  integrity sha512-g3RDuosSa5fZOzENtrZdx7Gevb3zabfn8qglug2aCJIVz/4woFpKoqm1yD3mG2RD0zJEZRnkkuPHsmNglKGl7g==
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -1023,6 +1028,11 @@ tar@^4:
     mkdirp "^0.5.0"
     safe-buffer "^5.1.2"
     yallist "^3.0.3"
+
+toid@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/toid/-/toid-1.0.1.tgz#b131d5dcba59bf2da8cea5751c17cd9e9f3806e3"
+  integrity sha1-sTHV3LpZvy2ozqV1HBfNnp84BuM=
 
 toidentifier@1.0.0:
   version "1.0.0"

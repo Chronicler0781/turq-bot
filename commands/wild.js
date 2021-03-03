@@ -1,4 +1,4 @@
-const { Battle, DexEntry, Location, Pokemon, User } = require('../models');
+const { Battle, Location, Pokemon, User } = require('../models');
 
 module.exports = {
 	name: 'wild',
@@ -7,7 +7,7 @@ module.exports = {
 	execute(Discord, bot, message) {
 
 		const gen_pokemon = require('./pokeinfo/gen_pokemon.js');
-		const Sim = require('../../pokemon-showdown');
+		const simulator = require('./functions/battleSimulator.js');
 
 		async function main() {
 
@@ -74,93 +74,58 @@ module.exports = {
 						}
 					}
 
-					
-
-					// make sure that form-variations are adjusted so that they can be processed and shown correctly
-					let formAddOn = '';
-					let wildPokemonForm = wildpoke;
-
-					if (wildpoke.match(/unown/g)){
-						if (wildpoke.match(/em/g)) {
-							formAddOn = ' !';
-						}
-						else if (wildpoke.match(/qm/g)){
-							formAddOn = ' ?';
-						}
-						else {
-							formAddOn = ' ' + wildpoke.charAt(5).toUpperCase();
-						}
-						wildpoke = 'unown';
-					}
-					if (wildpoke.match(/basculin/g)){
-						wildpoke = 'basculin';
-					}
-
 					// create wild pokemon
 					const wild_obj = gen_pokemon(wildpoke,'', wildLevel, helditem, '', null);
 					const newWild = await Pokemon.create(wild_obj);
 
+					let playerTeam = [];
+					for (const pokemonID of profile.party) {
+						playerTeam.push({ id: pokemonID, status: '' });
+					}
+
 					// create a new battle database entry with the two pokemon involved, save battle ID
 					const wildBattle = await Battle.create({
 						playerID: userID,
-						party: profile.party,
-						wildPokemon: newWild._id,
-						TurnCount: 0,
-						Type: 'Wild',
+						party: playerTeam,
+						active: {
+							id: profile.party[0],
+							statMods: {
+								atk: 0,
+								def: 0,
+								spa: 0,
+								spd: 0,
+								spe: 0,
+								acc: 0,
+								eva: 0,
+							},
+							status: '',
+							effects: '',
+						},
+						opponentParty: [{ id: newWild._id, status: '' }],
+						opponentActive: {
+							id: newWild._id,
+							statMods: {
+								atk: 0,
+								def: 0,
+								spa: 0,
+								spd: 0,
+								spe: 0,
+								acc: 0,
+								eva: 0,
+							},
+							status: '',
+							effects: '',
+						},
+						participated: [profile.party[0]],
+						turn: 0,
+						type: 'Wild',
 					});
 
 					// Update user's profile with new battle ID
 					const updatedProfile = { battleID: wildBattle._id };
 					profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, {new: true});
 
-					// Handle embed emoji and pokemon images for gender-related parts
-					let gend_emoji = null;
-					if(wild_obj.gender == 'Male') {
-						gend_emoji = bot.emojis.cache.find(emoji => emoji.name === 'm_');
-						if (wildpoke === 'meowstic' || wildpoke === 'josuche') {
-							wildPokemonForm = wildPokemonForm + 'male';
-						}
-					}
-					else if(wild_obj.gender == 'Female') {
-						gend_emoji = bot.emojis.cache.find(emoji => emoji.name === 'f_');
-						if (wildpoke === 'meowstic' || wildpoke === 'josuche') {
-							wildPokemonForm = wildPokemonForm + 'female';
-						}
-					}
-
-					// Handle pokemon images changes for regular or shiny pokemon
-					let shinyAddOn = '';
-					let imagePath = `./images/pokemon/pseudosprites/${wildPokemonForm}.png`;
-					let attachmentPath = `attachment://${wildPokemonForm}.png`;
-					if (newWild.shiny === true) {
-						shinyAddOn = 'Shiny ';
-						imagePath = `./images/pokemon/shinypseudosprites/${wildPokemonForm}shiny.png`
-						attachmentPath = `attachment://${wildPokemonForm}shiny.png`;
-					}
-					
-					const wildBattleEmbed = new Discord.MessageEmbed()
-						.setColor('#0099ff')
-						.setAuthor(`${location.name}`)
-						.setTitle(`A wild ${gend_emoji} Lvl. ${wildLevel} ${shinyAddOn}${wildpoke.charAt(0).toUpperCase() + wildpoke.slice(1) + formAddOn} appeared!`)
-						.setDescription(`**HP:** ${wild_obj.currentHP}/${wild_obj.maxHP}`)
-						.attachFiles([imagePath])
-						.setImage(attachmentPath)
-						.setFooter('Battle Started:')
-						.setTimestamp();
-
-					message.channel.send(wildBattleEmbed);
-
-					// stream = new Sim.BattleStream();
-
-					// (async () => {
-					// 	for await (const output of stream) {
-					// 		console.log(output);
-					// 	}
-					// })();
-
-					// stream.write(`>start {"formatid":"gen7randombattle"}`);
-					// stream.write(`>player p1 {"name":"${profile.firstName}"}`);
-					// stream.write(`>player p2 {"name":"${profile.rival.firstName}"}`);
+					await simulator(Discord, bot, message, wildBattle, profile, location);
 
 				}
 				else {

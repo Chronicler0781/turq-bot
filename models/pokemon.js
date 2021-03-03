@@ -5,9 +5,10 @@ module.exports = new Schema({
 		type: String, // pokemon's lowercase name
 		ref: 'DexEntry',
 	},
+	spriteName: String,
 	nickname: String,
 	level: Number,
-	gender: 'Male' | 'Female' | null,
+	gender: 'Male' | 'Female' | 'None',
 	maxHP: Number,
 	currentHP: Number,
 	status: String,

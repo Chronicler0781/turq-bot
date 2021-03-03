@@ -11,12 +11,14 @@
   "author": "Chronicler",
   "license": "ISC",
   "dependencies": {
+    "@std/esm": "^0.26.0",
     "canvas": "^2.6.1",
     "cors": "^2.8.5",
     "discord.js": "^12.2.0",
     "express": "^4.17.1",
     "merge-images": "^2.0.0",
     "mongodb": "^3.5.9",
-    "mongoose": "^5.9.25"
+    "mongoose": "^5.9.25",
+    "toid": "^1.0.1"
   }
 }
