@@ -17,7 +17,7 @@ module.exports = {
 				const userID = message.author.id;
 				let profile = await User.findOne({_id: userID});
 
-				if (profile.battleID == '' || profile.battleID == 'None') {
+				if (!profile.battleID) {
 					
 					// choose a numbers between 1-100 to determine the wild slot, held item chance, and evolution stage chance
 					const wildSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
@@ -30,7 +30,7 @@ module.exports = {
 
 					// set wildpoke and default held item values
 					let wildpoke = null;
-					let helditem = 'None';
+					let helditem = null;
 					let wildCounter = 0;
 					let minLvl = 60;
 					let maxLvl = 2;
@@ -47,11 +47,11 @@ module.exports = {
 
 							for (const wildStage of wildSlot.pokemon) {
 								console.log(wildStage);
-								if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (wildLevel <= wildStage.maxLvl || typeof wildStage.maxLvl === 'undefined' || wildSlot.pokemon.length === 1)) {
+								if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (!wildStage.maxLvl || wildLevel <= wildStage.maxLvl || wildSlot.pokemon.length === 1)) {
 									if (minLvl > wildStage.minLvl) {
 										minLvl = wildStage.minLvl;
 									}
-									if (maxLvl < wildStage.maxLvl && typeof wildStage.maxLvl !== 'undefined') {
+									if (wildStage.maxLvl && maxLvl < wildStage.maxLvl) {
 										maxLvl = wildStage.maxLvl;
 									}
 									else {

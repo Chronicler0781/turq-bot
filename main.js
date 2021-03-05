@@ -34,13 +34,16 @@ bot.once('ready', () =>{
 	console.log('Turq-Bot is online!');
 });
 
+// Set messageID for sign-up channel, and ID for trainer role to add
+const messageNumber = conf.signupMessageID;
+const trainerRole = conf.trainerRoleID;
+
 // watch for messages that start with the config file prefix or were posted by the bot
 bot.on('message', message =>{
 	if(!message.content.startsWith(prefix) || message.author.bot) return;
 
 	// remove prefix, set words that are spaced apart as separate strings in args array
 	const args = message.content.slice(prefix.length).split(/ +/);
-	// set first argument to lowercase command
 	const command = args.shift().toLowerCase();
 
 	switch(command) {
@@ -64,6 +67,11 @@ bot.on('message', message =>{
 	case 'set':
 		bot.commands.get('set').execute(message, args);
 		break;
+	
+	case 'signup':
+		if (!messageNumber) bot.commands.get('signup').execute(message, args);
+		else message.channel.send(`>>> Error: A signup channel has already been registered for this server. Please check the github ReadMe for information on this.`);
+		break;
 
 	case 'wild':
 		bot.commands.get('wild').execute(Discord, bot, message);
@@ -71,17 +79,12 @@ bot.on('message', message =>{
 
 	// if no command found, return message
 	default:
-		message.channel.send(`>>> The command, ${command}, is not recognized. Please check your spelling or enter '${prefix}help' for a full list of commands.`);
+		message.channel.send(`>>> Error: The command, ${command}, is not recognized. Please check your spelling or enter '${prefix}help' for a full list of commands.`);
 		console.log('Command not found');
 		break;
 	}
 
 });
-
-
-// Set messageID for sign-up channel, and ID for trainer role to add
-const MessageNumber = '749970227898351648';
-const trainerRole = '749977507876438107';
 
 // Watch for reactions to sign-up channel
 bot.on('messageReactionAdd', async (reaction, user) => {
@@ -151,7 +154,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 	if (reaction.message.partial) {
 		try {
 			const msg = await reaction.message.fetch();
-			if (msg.id === MessageNumber) {
+			if (msg.id === messageNumber) {
 				console.log('Cached');
 				createProfile();
 			}
@@ -161,9 +164,14 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 		}
 	}
 	else {
-		if (reaction.message.id === MessageNumber) {
-			console.log('Not a Partial');
-			createProfile();
+		try {
+			if (reaction.message.id === messageNumber) {
+				console.log('Not a Partial');
+				createProfile();
+			}
+		}
+		catch (err) {
+			console.log(err);
 		}
 	}
 });

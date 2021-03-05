@@ -25,9 +25,9 @@ module.exports = function travelCheck(user, location) {
     else {
         errorReason = errorReason + `Error: This route requires diving gear. Please visit Xybryle Bay after obtaining 3 badges, and complete the 'Submarine Safari' minigame by catching a Pokémon with at least one egg move.\n`;
     }
-    
+
     //badge check
-    if (user.badges.length >= location.numRequiredBadges || typeof location.numRequiredBadges == 'undefined') {
+    if (!location.numRequiredBadges || user.badges.length >= location.numRequiredBadges) {
         hasBadges = true;
     }
     else {
@@ -35,16 +35,14 @@ module.exports = function travelCheck(user, location) {
     }
 
     //revivalist job check
-    if (user.revivalistJobsCompleted.length >= location.numRequiredRevJobs || typeof location.numRequiredRevJobs == 'undefined') {
+    if (!location.numRequiredRevJobs || user.revivalistJobsCompleted.length >= location.numRequiredRevJobs) {
         hasRevJobs = true;
     }
     else {
         errorReason = errorReason + `Error: ${location.name} requires the completion of ${location.numRequiredRevJobs} revivalist jobs in order to access it.\n`;
     }
-
     if (canSurf && canDive && hasBadges && hasRevJobs) {
         canTravel = true;
     }
-
     return { canTravelTo: canTravel, reason: errorReason }
 }
