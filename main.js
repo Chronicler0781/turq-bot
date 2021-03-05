@@ -64,6 +64,11 @@ bot.on('message', message =>{
 		bot.commands.get('run').execute(message);
 		break;
 
+	case 'signup':
+		if (!messageNumber) bot.commands.get('signup').execute(message, args);
+		else message.channel.send(`>>> Error: A signup channel has already been registered for this server. Please check the github ReadMe for information on this.`);
+		break;
+
 	case 'set':
 		bot.commands.get('set').execute(message, args);
 		break;

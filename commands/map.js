@@ -203,7 +203,7 @@ module.exports = {
 							location = await Location.findOne({ locNames: args[0], areaName: args[1]})
 								.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs'});	
 
-								if (location) {
+							if (location) {
 
 								valid = true;
 								travelStatus = travelCheck(profile, location);
@@ -600,7 +600,7 @@ module.exports = {
 			let data = null;
 			firstRun = true;
 
-			while (decision) {
+			while (!decision) {
 				switch (optionSet) {
 					case 1:
 						if (firstRun) loadMessage.delete();
