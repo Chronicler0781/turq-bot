@@ -398,8 +398,7 @@ module.exports = function det_ability(pokemon, abilityno) {
 		else if (ab_num == 3) { ability = 'Technician'; }
 		break;
 
-	// eslint-disable-next-line quotes
-	case "farfetch'd":
+	case 'farfetch\'d':
 		if (ab_num == 1) { ability = 'Keen Eye'; }
 		else if (ab_num == 2) { ability = 'Inner Focus'; }
 		else if (ab_num == 3) { ability = 'Defiant'; }

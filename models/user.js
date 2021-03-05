@@ -5,11 +5,13 @@ module.exports = new Schema({
 	username: String,
 	firstName: String,
 	lastName: String,
+	nickname: String,
 	age: Number,
 	gender: 'Male' | 'Female' | 'Other' | null,
 	money: Number,
 	badges: [String],
 	keyItems: [String],
+	revivalistJobsCompleted: [String],
 	generalItems: [{
 		name: String,
 		quantity: Number,
@@ -19,19 +21,24 @@ module.exports = new Schema({
 		quantity: Number,
 	}],
 	tms: [String],
-	hms: [String],
+	mapStatus: 'open' | 'closed',
+	services: ['Altaria Airways' | 'Drakella Journeys' | 'Diving Gear'],
 	party: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Pokemon',
 	}],
 	rival: {
-		name: String,
+		firstName: String,
+		lastName: String,
+		nickname: String,
 		age: Number,
 		gender: 'Male' | 'Female' | 'Other' | null,
 		team: [String],
 	},
 	visited: [String],
 	currentLocation: String,
-	area: String,
-	battleID: String,
-});
+	battleID: { 
+		type: Schema.Types.Mixed,
+		ref: 'Battle'
+	}
+}, { collection: 'users' });

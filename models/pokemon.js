@@ -2,12 +2,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 module.exports = new Schema({
 	pokemon: {
-		type: Number, // dex id is the national dex #
+		type: String, // pokemon's lowercase name
 		ref: 'DexEntry',
 	},
+	spriteName: String,
 	nickname: String,
 	level: Number,
-	gender: 'Male' | 'Female' | null,
+	gender: 'Male' | 'Female' | 'None',
 	maxHP: Number,
 	currentHP: Number,
 	status: String,
