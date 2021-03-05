@@ -232,6 +232,7 @@ async function main() {
 				{
 					_id: 'routenl2',
 					name: 'Route NL2',
+					island: 'Brol Island',
 					usableHMs: ['fly', 'surf', 'dive'],
 					accessTo: ['shrdlutown', 'allogracity'],
 					wilds: [
@@ -493,8 +494,8 @@ async function main() {
 							{ name: 'unowny', minLvl: 30 },
 						] },
 						{ probability: 1, pokemon: [
-							{ name: 'unown!', minLvl: 30 },
-							{ name: 'unown?', minLvl: 30 },
+							{ name: 'unownem', minLvl: 30 },
+							{ name: 'unownqm', minLvl: 30 },
 						] },
 					],
 					hasTrainers: false,
@@ -556,6 +557,7 @@ async function main() {
 				{
 					_id: 'routenl6',
 					name: 'Route NL6',
+					island: 'Kronea Island',
 					usableHMs: ['fly', 'surf', 'dive'],
 					accessTo: ['routenl5', 'routenl7'],
 					wilds: [
@@ -756,8 +758,8 @@ async function main() {
 							{ name: 'unownt', minLvl: 30 },
 						] },
 						{ probability: 1, pokemon: [
-							{ name: 'unown!', minLvl: 30 },
-							{ name: 'unown?', minLvl: 30 },
+							{ name: 'unownem', minLvl: 30 },
+							{ name: 'unownqm', minLvl: 30 },
 						] },
 					],
 					hasTrainers: false,
@@ -921,8 +923,8 @@ async function main() {
 							{ name: 'unownu', minLvl: 30 },
 						] },
 						{ probability: 1, pokemon: [
-							{ name: 'unown!', minLvl: 30 },
-							{ name: 'unown?', minLvl: 30 },
+							{ name: 'unownem', minLvl: 30 },
+							{ name: 'unownqm', minLvl: 30 },
 						] },
 					],
 					hasTrainers: false,
@@ -981,7 +983,7 @@ async function main() {
 					island: 'Tilnen Island',
 					usableHMs: ['fly'],
 					actions: ['Quests'],
-					accessTo: ['fulgurokmountains_mountainside', 'fulgurokcaves', 'routenl10'],
+					accessTo: ['fulgurokmountainsmountainside', 'fulgurokcaves', 'routenl10'],
 					wilds: [
 						{ probability: 30, pokemon: [
 							{ name: 'mareep', minLvl: 8, maxLvl: 22 },
@@ -1164,6 +1166,7 @@ async function main() {
 				{
 					_id: 'routenl11',
 					name: 'Route NL11',
+					island: 'Tilnen Island',
 					usableHMs: ['fly', 'surf', 'dive'],
 					accessTo: ['diacity', 'routenl12falantrdocks'],
 					wilds: [
@@ -1314,7 +1317,7 @@ async function main() {
 					name: 'Route NL14',
 					island: 'Xybryle Island',
 					usableHMs: ['fly'],
-					accessTo: ['routenl13/xybrylebridge', 'runecity', 'routenl15'],
+					accessTo: ['routenl13xybrylebridge', 'runecity', 'routenl15'],
 					ferry: [
 						{ id: 'leddintown', cost: '500' },
 						{ id: 'shrdlutown', cost: '500' },
@@ -1380,7 +1383,6 @@ async function main() {
 						{ id: 'diacity', cost: '300' },
 						{ id: 'routenl12falantrdocks', cost: '100' },
 						{ id: 'routenl14', cost: '100' },
-						{ id: 'runecity', cost: '300' },
 						{ id: 'routenl16', cost: '300' },
 						{ id: 'fracturacity', cost: '500' },
 					],
@@ -1573,8 +1575,8 @@ async function main() {
 							{ name: 'unownx', minLvl: 30 },
 						] },
 						{ probability: 1, pokemon: [
-							{ name: 'unown!', minLvl: 30 },
-							{ name: 'unown?', minLvl: 30 },
+							{ name: 'unownem', minLvl: 30 },
+							{ name: 'unownqm', minLvl: 30 },
 						] },
 					],
 					hasTrainers: false,
@@ -1586,6 +1588,7 @@ async function main() {
 				{
 					_id: 'routenl15',
 					name: 'Route NL15',
+					island: 'Xybryle Island',
 					usableHMs: ['fly', 'surf', 'dive'],
 					accessTo: ['routenl14', 'routenl16'],
 					wilds: [
@@ -1888,8 +1891,8 @@ async function main() {
 							{ name: 'unownq', minLvl: 30 },
 						] },
 						{ probability: 1, pokemon: [
-							{ name: 'unown!', minLvl: 30 },
-							{ name: 'unown?', minLvl: 30 },
+							{ name: 'unownem', minLvl: 30 },
+							{ name: 'unownqm', minLvl: 30 },
 						] },
 					],
 					hasTrainers: false,
@@ -1970,6 +1973,7 @@ async function main() {
 				{
 					_id: 'routenl20',
 					name: 'Route NL20',
+					island: 'Krtuso Island',
 					usableHMs: ['fly', 'surf', 'dive'],
 					accessTo: ['fracturacity', 'leddintown'],
 					wilds: [
@@ -2004,6 +2008,7 @@ async function main() {
 				{
 					_id: 'routenl21',
 					name: 'Route NL21',
+					island: 'Adar Zilira',
 					usableHMs: ['fly', 'surf', 'dive'],
 					numRequiredBadges: 8,
 					accessTo: ['routenl12falantrdocks', 'alnirazruinsvictoryroadstreets'],
@@ -2145,8 +2150,8 @@ async function main() {
 							{ name: 'unownz', minLvl: 30 },
 						] },
 						{ probability: 1, pokemon: [
-							{ name: 'unown!', minLvl: 30 },
-							{ name: 'unown?', minLvl: 30 },
+							{ name: 'unownem', minLvl: 30 },
+							{ name: 'unownqm', minLvl: 30 },
 						] },
 					],
 					hasTrainers: false,
@@ -2163,18 +2168,6 @@ async function main() {
 					actions: ['Elite4'],
 					numRequiredBadges: 8,
 					accessTo: ['alnirazruinsvictoryroadstreets'],
-					ferry: [
-						{ id: 'leddintown', cost: '300' },
-						{ id: 'shrdlutown', cost: '500' },
-						{ id: 'allogracity', cost: '700' },
-						{ id: 'routenl5', cost: '700' },
-						{ id: 'routenl7', cost: '700' },
-						{ id: 'diacity', cost: '300' },
-						{ id: 'routenl12falantrdocks', cost: '500' },
-						{ id: 'routenl14', cost: '500' },
-						{ id: 'runecity', cost: '500' },
-						{ id: 'routenl16', cost: '100' },
-					],
 					hasTrainers: false,
 					shops: ['PokéMart'],
 				},

@@ -11,6 +11,7 @@ module.exports = new Schema({
 	money: Number,
 	badges: [String],
 	keyItems: [String],
+	revivalistJobsCompleted: [String],
 	generalItems: [{
 		name: String,
 		quantity: Number,
@@ -20,6 +21,8 @@ module.exports = new Schema({
 		quantity: Number,
 	}],
 	tms: [String],
+	mapStatus: 'open' | 'closed',
+	services: ['Altaria Airways' | 'Drakella Journeys' | 'Diving Gear'],
 	party: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Pokemon',

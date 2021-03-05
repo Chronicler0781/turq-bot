@@ -172,7 +172,7 @@ module.exports = function det_stats(pokemon, level, nat_mult) {
 		baseStats = [60, 60, 50, 40, 40, 35];
 		break;
 
-	case 'dartizel-R':
+	case 'dartizel-r':
 		baseStats = [70, 80, 60, 80, 60, 130];
 		break;
 
@@ -352,7 +352,7 @@ module.exports = function det_stats(pokemon, level, nat_mult) {
 		baseStats = [48, 60, 85, 15, 42, 15];
 		break;
 
-	case 'halberax-R':
+	case 'halberax-r':
 		baseStats = [70, 140, 70, 40, 90, 70];
 		break;
 
@@ -484,7 +484,7 @@ module.exports = function det_stats(pokemon, level, nat_mult) {
 		baseStats = [60, 80, 65, 45, 50, 65];
 		break;
 
-	case 'loftitan-R':
+	case 'loftitan-r':
 		baseStats = [80, 100, 105, 50, 105, 40];
 		break;
 

@@ -13,5 +13,6 @@ module.exports = function det_shiny() {
 	else {
 		shiny = true;
 	}
+
 	return shiny;
 };

@@ -16,20 +16,23 @@ module.exports = {
 				const userID = message.author.id;
 				let profile = await User.findOne({_id: userID});
 
-				if (profile.battleID == '' || profile.battleID == 'None') {
+				if (!profile.battleID) {
 					
 					// choose a numbers between 1-100 to determine the wild slot, held item chance, and evolution stage chance
 					const wildSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
+					console.log('wild seed: ' + wildSeed)
 					// const itemSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
 
 					// use the levelcalc function to determine the wild level of the pokemon
 					let wildLevel = await levelcalc(profile);
+					console.log(wildLevel);
 
 					// set wildpoke and default held item values
 					let wildpoke = null;
-					let helditem = 'None';
+					let helditem =  null;
 					let wildCounter = 0;
 					let minLvl = 60;
+					let maxLvl = 2;
 
 					// Determine wild slot with see, applicable stages in slot, and choose stage for wild encounter
 					const location = await Location.findOne({_id: profile.currentLocation});
@@ -38,12 +41,20 @@ module.exports = {
 						wildCounter = wildCounter + wildSlot.probability;
 						
 						if (wildSeed <= wildCounter) {
+							console.log('wild counter: ' + wildCounter)
 							const stages = [];
 
 							for (const wildStage of wildSlot.pokemon) {
-								if (wildLevel >= wildStage.minLvl && (wildLevel <= wildStage.maxLvl || typeof wildStage.maxLvl === 'undefined')) {
+								console.log(wildStage);
+								if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (!wildStage.maxLvl || wildLevel <= wildStage.maxLvl || wildSlot.pokemon.length === 1)) {
 									if (minLvl > wildStage.minLvl) {
 										minLvl = wildStage.minLvl;
+									}
+									if (wildStage.maxLvl && maxLvl < wildStage.maxLvl) {
+										maxLvl = wildStage.maxLvl;
+									}
+									else {
+										maxLvl = 60;
 									}
 									stages.push(wildStage.name)
 								}
@@ -52,16 +63,40 @@ module.exports = {
 							if (wildLevel < minLvl) {
 								wildLevel = minLvl;
 							}
+							if (wildLevel > maxLvl) {
+								wildLevel = maxLvl;
+							}
 							const stageSeed = Math.floor(Math.random() * (stages.length - 1 + 1));
 							wildpoke = stages[stageSeed];
+							console.log(stages);
 							break;
 						}
 					}
 
-					// create wild pokemon object
-					const wild_obj = gen_pokemon(wildpoke,'', wildLevel, helditem, '', null);
+					
 
-					// create wild pokemon in database, save wild pokemon's ID
+					// make sure that form-variations are adjusted so that they can be processed and shown correctly
+					let formAddOn = '';
+					let wildPokemonForm = wildpoke;
+
+					if (wildpoke.match(/unown/g)){
+						if (wildpoke.match(/em/g)) {
+							formAddOn = ' !';
+						}
+						else if (wildpoke.match(/qm/g)){
+							formAddOn = ' ?';
+						}
+						else {
+							formAddOn = ' ' + wildpoke.charAt(5).toUpperCase();
+						}
+						wildpoke = 'unown';
+					}
+					if (wildpoke.match(/basculin/g)){
+						wildpoke = 'basculin';
+					}
+
+					// create wild pokemon
+					const wild_obj = gen_pokemon(wildpoke,'', wildLevel, helditem, '', null);
 					const newWild = await Pokemon.create(wild_obj);
 
 					// create a new battle database entry with the two pokemon involved, save battle ID
@@ -77,21 +112,38 @@ module.exports = {
 					const updatedProfile = { battleID: wildBattle._id };
 					profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, {new: true});
 
-					// Create gender emoji variable to male or female
-					let gend_emoji = [];
-					if(wild_obj.Gender == 'Male') {
+					// Handle embed emoji and pokemon images for gender-related parts
+					let gend_emoji = null;
+					if(wild_obj.gender === 'Male') {
 						gend_emoji = bot.emojis.cache.find(emoji => emoji.name === 'm_');
+						if (wildpoke === 'meowstic' || wildpoke === 'josuche') {
+							wildPokemonForm = wildPokemonForm + 'male';
+						}
 					}
-					else if(wild_obj.Gender == 'Female') {
+					else if(wild_obj.gender === 'Female') {
 						gend_emoji = bot.emojis.cache.find(emoji => emoji.name === 'f_');
+						if (wildpoke === 'meowstic' || wildpoke === 'josuche') {
+							wildPokemonForm = wildPokemonForm + 'female';
+						}
 					}
 
+					// Handle pokemon images changes for regular or shiny pokemon
+					let shinyAddOn = '';
+					let imagePath = `./images/pokemon/pseudosprites/${wildPokemonForm}.png`;
+					let attachmentPath = `attachment://${wildPokemonForm}.png`;
+					if (newWild.shiny === true) {
+						shinyAddOn = 'Shiny ';
+						imagePath = `./images/pokemon/shinypseudosprites/${wildPokemonForm}shiny.png`
+						attachmentPath = `attachment://${wildPokemonForm}shiny.png`;
+					}
+					
 					const wildBattleEmbed = new Discord.MessageEmbed()
 						.setColor('#0099ff')
 						.setAuthor(`${location.name}`)
-						.setTitle(`A wild ${gend_emoji} Lvl. ${wildLevel} ${wildpoke.charAt(0).toUpperCase() + wildpoke.slice(1)} appeared!`)
+						.setTitle(`A wild ${gend_emoji} Lvl. ${wildLevel} ${shinyAddOn}${wildpoke.charAt(0).toUpperCase() + wildpoke.slice(1) + formAddOn} appeared!`)
 						.setDescription(`**HP:** ${wild_obj.currentHP}/${wild_obj.maxHP}`)
-						.setImage(`http://turquoise.alteredorigin.net/images/pseudosprites/${wildpoke}.png`)
+						.attachFiles([imagePath])
+						.setImage(attachmentPath)
 						.setFooter('Battle Started:')
 						.setTimestamp();
 
@@ -124,27 +176,27 @@ module.exports = {
 			let count = 0;
 			const levels = [];
 			if (slot1 !== null) {
-				levels[count] = slot1.Level;
+				levels[count] = slot1.level;
 				count = count + 1;
 			}
 			if (slot2 !== null) {
-				levels[count] = slot2.Level;
+				levels[count] = slot2.level;
 				count = count + 1;
 			}
 			if (slot3 !== null) {
-				levels[count] = slot3.Level;
+				levels[count] = slot3.level;
 				count = count + 1;
 			}
 			if (slot4 !== null) {
-				levels[count] = slot4.Level;
+				levels[count] = slot4.level;
 				count = count + 1;
 			}
 			if (slot5 !== null) {
-				levels[count] = slot5.Level;
+				levels[count] = slot5.level;
 				count = count + 1;
 			}
 			if (slot6 !== null) {
-				levels[count] = slot6.Level;
+				levels[count] = slot6.level;
 				count = count + 1;
 			}
 
