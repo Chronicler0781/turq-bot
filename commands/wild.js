@@ -29,7 +29,7 @@ module.exports = {
 
 					// set wildpoke and default held item values
 					let wildpoke = null;
-					let helditem = 'None';
+					let helditem =  null;
 					let wildCounter = 0;
 					let minLvl = 60;
 					let maxLvl = 2;
@@ -46,11 +46,11 @@ module.exports = {
 
 							for (const wildStage of wildSlot.pokemon) {
 								console.log(wildStage);
-								if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (wildLevel <= wildStage.maxLvl || typeof wildStage.maxLvl === 'undefined' || wildSlot.pokemon.length === 1)) {
+								if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (!wildStage.maxLvl || wildLevel <= wildStage.maxLvl || wildSlot.pokemon.length === 1)) {
 									if (minLvl > wildStage.minLvl) {
 										minLvl = wildStage.minLvl;
 									}
-									if (maxLvl < wildStage.maxLvl && typeof wildStage.maxLvl !== 'undefined') {
+									if (wildStage.maxLvl && maxLvl < wildStage.maxLvl) {
 										maxLvl = wildStage.maxLvl;
 									}
 									else {

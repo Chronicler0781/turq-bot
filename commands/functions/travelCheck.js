@@ -27,7 +27,7 @@ module.exports = function travelCheck(user, location) {
     }
     
     //badge check
-    if (user.badges.length >= location.numRequiredBadges || typeof location.numRequiredBadges == 'undefined') {
+    if (!location.numRequiredBadges || user.badges.length >= location.numRequiredBadges) {
         hasBadges = true;
     }
     else {
@@ -35,7 +35,7 @@ module.exports = function travelCheck(user, location) {
     }
 
     //revivalist job check
-    if (user.revivalistJobsCompleted.length >= location.numRequiredRevJobs || typeof location.numRequiredRevJobs == 'undefined') {
+    if (!location.numRequiredRevJobs || user.revivalistJobsCompleted.length >= location.numRequiredRevJobs) {
         hasRevJobs = true;
     }
     else {
