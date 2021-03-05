@@ -1,11 +1,11 @@
 Turq-Bot - The Discord Pokémon FanGame Engine
 ========================================================================
 
-Navigation: [Discord Server][1] | [Turquoise Dex][2] | [Pokémon Showdown Fork Repository][3]
+Navigation: [Discord Server][1] | [Turquoise Dex][2] | [Pokémon Showdown Fork][3]
 
-    [1]: https://discord.gg/5SuaqNh
-    [2]: http://turquoise.alteredorigin.net/
-    [3]: https://github.com/nbely/pokemon-showdown#pok%C3%A9mon-showdown
+   [1]: https://discord.gg/5SuaqNh
+   [2]: http://turquoise.alteredorigin.net/
+   [3]: https://github.com/nbely/pokemon-showdown#pok%C3%A9mon-showdown
 
 
 Introduction
