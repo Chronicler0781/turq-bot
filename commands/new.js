@@ -194,6 +194,7 @@ module.exports = {
 							},
 							visited: ['leddintown'],
 							currentLocation: 'leddintown',
+							lastHealLocation: 'leddintown',
 							battleID: '',
 						});
 

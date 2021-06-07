@@ -37,6 +37,7 @@ module.exports = new Schema({
 	},
 	visited: [String],
 	currentLocation: String,
+	lastHealLocation: String,
 	battleID: { 
 		type: Schema.Types.Mixed,
 		ref: 'Battle'

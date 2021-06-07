@@ -52,6 +52,11 @@ bot.on('message', message =>{
 		bot.commands.get('dex').execute(message, args);
 		break;
 
+	// temporary command used to heal party until a menu with pokemon center access is added
+	case 'heal':
+		bot.commands.get('heal').execute(message);
+		break;
+
 	case 'help':
 		bot.commands.get('help').execute(message, args);
 		break;
@@ -60,19 +65,12 @@ bot.on('message', message =>{
 		bot.commands.get('map').execute(Discord, message, args, fs);
 		break;
 
+	// temporary command used to force exit a wild battle if a battle errors out while debugging
 	case 'run':
 		bot.commands.get('run').execute(message);
 		break;
 
-	case 'signup':
-		if (!messageNumber) bot.commands.get('signup').execute(message, args);
-		else message.channel.send(`>>> Error: A signup channel has already been registered for this server. Please check the github ReadMe for information on this.`);
-		break;
-
-	case 'set':
-		bot.commands.get('set').execute(message, args);
-		break;
-	
+	// typically only used once to create signup channel messages
 	case 'signup':
 		if (!messageNumber) bot.commands.get('signup').execute(message, args);
 		else message.channel.send(`>>> Error: A signup channel has already been registered for this server. Please check the github ReadMe for information on this.`);
@@ -102,7 +100,6 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 		console.log(member);
 		let reactionValues = null;
 		let userReactedAlready = null;
-
 
 		if (member) {
 			console.log('Role and Member Found');

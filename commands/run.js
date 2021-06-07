@@ -16,18 +16,19 @@ module.exports = {
 
 				if (profile.battleID) {
 
-					const battleInfo = await Battle.findOneAndRemove({_id: profile.battleID});
-					const wildPokemon = await Pokemon.findOneAndRemove({_id: battleInfo.wildPokemon});
+					const battle = await Battle.findOneAndRemove({_id: profile.battleID});
+					for (const pokemon of battle.opponentParty) {
+						await Pokemon.findOneAndRemove({_id: pokemon.id});
+					}
 
 					// Update user's profile with battle ID removed.
 					const updatedProfile = { battleID: ''};
 					profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, {new: true});
 
-					message.channel.send('>>> You have succesfully run away!');
-
 				}
 				else {
-					message.channel.send('>>> This command only works if you are currently in a wild battle!');
+					console.log('There was an error with ending the battle.');
+					// message.channel.send('>>> This command only works if you are currently in a battle!');
 				}
 
 			// try ends

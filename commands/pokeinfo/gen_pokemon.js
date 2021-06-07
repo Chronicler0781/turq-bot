@@ -8,6 +8,8 @@ module.exports = function gen_pokemon(pkmn_name, nname, lvl, item, owner, userID
 	const det_ability = require('./det_ability.js');
 	const det_nature = require('./det_nature.js');
 	const det_shiny = require('./det_shiny.js');
+	const expLookup = require('./experienceLookup.js');
+	const det_happiness = require('./det_happiness.js');
 
 	console.log(`Beginning creation of Pokémon, ${pkmn_name}.`);
 
@@ -22,6 +24,9 @@ module.exports = function gen_pokemon(pkmn_name, nname, lvl, item, owner, userID
 	console.log(`Stats determined as: ${stats}`);
 	const current_ms = movesets(pkmn_name, lvl, []);
 	console.log(`Movelist determined as: ${current_ms}`);
+	const expValues = expLookup(pkmn_name, lvl);
+	const baseHappiness = det_happiness(pkmn_name);
+	console.log(`Base happiness determined as: ${baseHappiness}`);
 	const shininess = det_shiny();
 	console.log(`Is the Pokemon shiny?: ${shininess}`);
 
@@ -51,6 +56,8 @@ module.exports = function gen_pokemon(pkmn_name, nname, lvl, item, owner, userID
 		imageName = imageName + 'shiny';
 	}
 
+	
+
 	// create new database entry for specified starter pokemon
 	const newPokemon = {
 		pokemon: pkmn_name.charAt(0).toUpperCase() + pkmn_name.slice(1),
@@ -61,15 +68,20 @@ module.exports = function gen_pokemon(pkmn_name, nname, lvl, item, owner, userID
 		currentHP: stats[0],
 		maxHP: stats[0],
 		status: 'None',
-		// abilityNo: ability.number,
+		abilityNo: ability.number,
 		ability: ability.name,
 		nature: nature.name,
-		// natureMultipliers: nature.mult,
+		natureMultipliers: nature.mult,
 		heldItem: item,
 		currentTrainer: userID,
 		OT: owner,
 		moves: current_ms,
-		exp: 0,
+		exp: {
+			current: expValues.current,
+			percentage: expValues.percent,
+			nextLevel: expValues.nextLevel,
+		},
+		happiness: baseHappiness,
 		shiny: shininess,
 	};
 

@@ -16,120 +16,143 @@ module.exports = {
 				// retrieve user profile from database
 				const userID = message.author.id;
 				let profile = await User.findOne({_id: userID});
+				const location = await Location.findOne({_id: profile.currentLocation});
 
-				if (!profile.battleID) {
-					
-					// choose a numbers between 1-100 to determine the wild slot, held item chance, and evolution stage chance
-					const wildSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
-					console.log('wild seed: ' + wildSeed)
-					// const itemSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
-
-					// use the levelcalc function to determine the wild level of the pokemon
-					let wildLevel = await levelcalc(profile);
-					console.log(wildLevel);
-
-					// set wildpoke and default held item values
-					let wildpoke = null;
-					let helditem = null;
-					let wildCounter = 0;
-					let minLvl = 60;
-					let maxLvl = 2;
-
-					// Determine wild slot with see, applicable stages in slot, and choose stage for wild encounter
-					const location = await Location.findOne({_id: profile.currentLocation});
-
-					for (const wildSlot of location.wilds) {
-						wildCounter = wildCounter + wildSlot.probability;
+				if (location.wilds[0]) {
+					if (!profile.battleID) {
 						
-						if (wildSeed <= wildCounter) {
-							console.log('wild counter: ' + wildCounter)
-							const stages = [];
+						// choose a numbers between 1-100 to determine the wild slot, held item chance, and evolution stage chance
+						const wildSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
+						console.log('wild seed: ' + wildSeed)
+						// const itemSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
 
-							for (const wildStage of wildSlot.pokemon) {
-								console.log(wildStage);
-								if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (!wildStage.maxLvl || wildLevel <= wildStage.maxLvl || wildSlot.pokemon.length === 1)) {
-									if (minLvl > wildStage.minLvl) {
-										minLvl = wildStage.minLvl;
+						// use the levelcalc function to determine the wild level of the pokemon
+						let wildLevel = await levelcalc(profile);
+						console.log(wildLevel);
+
+						// set wildpoke and default held item values
+						let wildpoke = null;
+						let helditem = null;
+						let wildCounter = 0;
+						let minLvl = 60;
+						let maxLvl = 2;
+
+						// Determine wild slot with see, applicable stages in slot, and choose stage for wild encounter
+						for (const wildSlot of location.wilds) {
+							wildCounter = wildCounter + wildSlot.probability;
+							
+							if (wildSeed <= wildCounter) {
+								console.log('wild counter: ' + wildCounter)
+								const stages = [];
+
+								for (const wildStage of wildSlot.pokemon) {
+									console.log(wildStage);
+									if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (!wildStage.maxLvl || wildLevel <= wildStage.maxLvl || wildSlot.pokemon.length === 1)) {
+										if (minLvl > wildStage.minLvl) {
+											minLvl = wildStage.minLvl;
+										}
+										if (wildStage.maxLvl && maxLvl < wildStage.maxLvl) {
+											maxLvl = wildStage.maxLvl;
+										}
+										else {
+											maxLvl = 60;
+										}
+										stages.push(wildStage.name)
 									}
-									if (wildStage.maxLvl && maxLvl < wildStage.maxLvl) {
-										maxLvl = wildStage.maxLvl;
-									}
-									else {
-										maxLvl = 60;
-									}
-									stages.push(wildStage.name)
 								}
-							}
 
-							if (wildLevel < minLvl) {
-								wildLevel = minLvl;
+								if (wildLevel < minLvl) {
+									wildLevel = minLvl;
+								}
+								if (wildLevel > maxLvl) {
+									wildLevel = maxLvl;
+								}
+								const stageSeed = Math.floor(Math.random() * (stages.length - 1 + 1));
+								wildpoke = stages[stageSeed];
+								console.log(stages);
+								break;
 							}
-							if (wildLevel > maxLvl) {
-								wildLevel = maxLvl;
-							}
-							const stageSeed = Math.floor(Math.random() * (stages.length - 1 + 1));
-							wildpoke = stages[stageSeed];
-							console.log(stages);
-							break;
 						}
-					}
 
-					// create wild pokemon
-					const wild_obj = gen_pokemon(wildpoke,'', wildLevel, helditem, '', null);
-					const newWild = await Pokemon.create(wild_obj);
+						// create wild pokemon object and instance in database,
+						// along with opponent party array for accessing pokemon info in-battle
+						console.log(wildpoke);
+						const wild_obj = gen_pokemon(wildpoke,'', wildLevel, helditem, '', null);
+						const newWild = await Pokemon.create(wild_obj);
+						let oppParty = [newWild];
 
-					let playerTeam = [];
-					for (const pokemonID of profile.party) {
-						playerTeam.push({ id: pokemonID, status: '' });
-					}
+						// create playerTeam array to insert in battle object, 
+						// and party array for acccessing pokemon info in-battle
+						let party = [],
+							playerTeam = [],
+							fainted = [];
+							i = 0;
+						for (const pokemonID of profile.party) {
+							let tempPoke = await Pokemon.findOne({ _id: pokemonID });
+							party.push(tempPoke);
+							if (tempPoke.status === 'Fainted') {
+								fainted.push(i);
+							}
+							playerTeam.push({ id: pokemonID, nickname: tempPoke.nickname, pokemon: tempPoke.pokemon });
+							i++;
+						}
 
-					// create a new battle database entry with the two pokemon involved, save battle ID
-					const wildBattle = await Battle.create({
-						playerID: userID,
-						party: playerTeam,
-						active: {
-							id: profile.party[0],
-							statMods: {
-								atk: 0,
-								def: 0,
-								spa: 0,
-								spd: 0,
-								spe: 0,
-								acc: 0,
-								eva: 0,
+						// create a new battle database entry with the two pokemon involved, save battle ID
+						const wildBattle = await Battle.create({
+							playerID: userID,
+							party: playerTeam,
+							active: {
+								id: playerTeam[0].id,
+								position: 0,
+								boosts: {
+									atk: 0,
+									def: 0,
+									spa: 0,
+									spd: 0,
+									spe: 0,
+									accuracy: 0,
+									evasion: 0,
+								},
+								effects: [],
 							},
-							status: '',
-							effects: '',
-						},
-						opponentParty: [{ id: newWild._id, status: '' }],
-						opponentActive: {
-							id: newWild._id,
-							statMods: {
-								atk: 0,
-								def: 0,
-								spa: 0,
-								spd: 0,
-								spe: 0,
-								acc: 0,
-								eva: 0,
+							fainted: [],
+							opponentParty: [{ id: newWild._id, pokemon: newWild.pokemon }],
+							opponentActive: {
+								id: newWild._id,
+								position: 0,
+								boosts: {
+									atk: 0,
+									def: 0,
+									spa: 0,
+									spd: 0,
+									spe: 0,
+									accuracy: 0,
+									evasion: 0,
+								},
+								effects: [],
 							},
-							status: '',
-							effects: '',
-						},
-						participated: [profile.party[0]],
-						turn: 0,
-						type: 'Wild',
-					});
+							opponentFainted: [],
+							opponent: {
+								type: 'Wild',
+							},
+							participated: [0],
+							evolutions: [],
+							turn: 1,
+						});
 
-					// Update user's profile with new battle ID
-					const updatedProfile = { battleID: wildBattle._id };
-					profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, {new: true});
+						// Update user's profile with new battle ID
+						const updatedProfile = { battleID: wildBattle._id };
+						profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, {new: true});
 
-					await simulator(Discord, bot, message, wildBattle, profile, location);
+						await simulator(Discord, bot, message, wildBattle, profile, location, party, oppParty);
 
+					}
+					else {
+						message.channel.send('>>> Error: Please finish your current battle before searching for a new wild Pokémon!');
+					}
 				}
 				else {
-					message.channel.send('>>> Please finish your current battle before searching for a new wild Pokémon!');
+					message.channel.send('>>> Error: This location does not contain wild Pokémon!');
 				}
 
 			// try ends
@@ -178,7 +201,7 @@ module.exports = {
 				count = count + 1;
 			}
 
-			const levelbase = Math.max(levels);
+			const levelbase = Math.max(...levels);
 
 			// var LevelResult = Math.floor(Math.random() * ((levelbase+2) - (levelbase-4) + 1)) + ((levelbase-4) - 0); //old version that allowed wilds slightly stronger than the player's pokemon
 			let LevelResult = Math.floor(Math.random() * ((levelbase - 1) - (levelbase - 7) + 1)) + ((levelbase - 7) - 0);

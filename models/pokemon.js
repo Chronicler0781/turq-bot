@@ -12,11 +12,13 @@ module.exports = new Schema({
 	maxHP: Number,
 	currentHP: Number,
 	status: String,
+	abilityNo: Schema.Types.Mixed,
 	ability: {
 		type: String,
 		ref: 'Ability',
 	},
 	nature: String,
+	natureMultipliers: [Number],
 	heldItem: String,
 	currentTrainer: {
 		type: String, // discord ID is a string
@@ -27,6 +29,11 @@ module.exports = new Schema({
 		type: String,
 		ref: 'Move',
 	}],
-	exp: Number,
+	exp: {
+		current: Number,
+		percentage: Number,
+		nextLevel: Number,
+	},
+	happiness: Number,
 	shiny: Boolean,
 });
