@@ -7,7 +7,7 @@ module.exports = new Schema({
 	lastName: String,
 	nickname: String,
 	age: Number,
-	gender: 'Male' | 'Female' | 'Other' | null,
+	gender: String,
 	money: Number,
 	badges: [String],
 	keyItems: [String],
@@ -32,14 +32,14 @@ module.exports = new Schema({
 		lastName: String,
 		nickname: String,
 		age: Number,
-		gender: 'Male' | 'Female' | 'Other' | null,
+		gender: String,
 		team: [String],
 	},
 	visited: [String],
 	currentLocation: String,
 	lastHealLocation: String,
-	battleID: { 
+	battleID: {
 		type: Schema.Types.Mixed,
-		ref: 'Battle'
-	}
+		ref: 'Battle',
+	},
 }, { collection: 'users' });

@@ -1,4 +1,4 @@
-const { Battle, Pokemon, User } = require('../models');
+const { Battle, Pokemon, User } = require('../../models');
 
 module.exports = {
 	name: 'run',
@@ -12,18 +12,18 @@ module.exports = {
 
 				// retrieve user profile from database
 				const userID = message.author.id;
-				let profile = await User.findOne({_id: userID});
+				let profile = await User.findOne({ _id: userID });
 
 				if (profile.battleID) {
 
-					const battle = await Battle.findOneAndRemove({_id: profile.battleID});
+					const battle = await Battle.findOneAndRemove({ _id: profile.battleID });
 					for (const pokemon of battle.opponentParty) {
-						await Pokemon.findOneAndRemove({_id: pokemon.id});
+						await Pokemon.findOneAndRemove({ _id: pokemon.id });
 					}
 
 					// Update user's profile with battle ID removed.
-					const updatedProfile = { battleID: ''};
-					profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, {new: true});
+					const updatedProfile = { battleID: '' };
+					profile = await User.findOneAndUpdate({ _id: userID }, updatedProfile, { new: true });
 
 				}
 				else {
@@ -40,5 +40,5 @@ module.exports = {
 		}
 
 		main().catch(console.error);
-	}
-}
+	},
+};
