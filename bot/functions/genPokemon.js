@@ -47,7 +47,7 @@ module.exports = function generatePokemon(pokemon, nname, level, profile, type, 
 		natureMultipliers: nature.mult,
 		heldItem: (item || ''),
 		currentTrainer: owner,
-		OT: owner,
+		originalTrainer: owner,
 		moves: moveset,
 		exp: {
 			current: exp.current,
@@ -58,7 +58,7 @@ module.exports = function generatePokemon(pokemon, nname, level, profile, type, 
 		shiny: shiny,
 	};
 
-	console.log(`${newPokemon.pokemon} successfully generated with ID: ${newPokemon._id}
+	console.log(`${newPokemon.pokemon} successfully generated.
 	Nickname: ${newPokemon.nname}
 	Level: ${newPokemon.level}
 	Gender: ${newPokemon.gender}

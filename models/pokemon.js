@@ -21,10 +21,9 @@ module.exports = new Schema({
 	natureMultipliers: [Number],
 	heldItem: String,
 	currentTrainer: {
-		type: String, // discord ID is a string
-		ref: 'User',
+		type: String,
 	},
-	OT: String,
+	originalTrainer: String,
 	moves: [{
 		type: String,
 		ref: 'Move',

@@ -6,6 +6,8 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 	// Set active pokemon for player and opponent
 	let active = party[0];
+	// Disabled: opponent will be able to change with trainer battles
+	// eslint-disable-next-line prefer-const
 	let opponent = oppParty[0];
 
 	// generate battleImage and gender/shiny info for battle embed
@@ -199,11 +201,11 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		gend_emoji.m = bot.emojis.cache.find(emoji => emoji.name === 'm_');
 		gend_emoji.f = bot.emojis.cache.find(emoji => emoji.name === 'f_');
 
-		if (active.gender === 'Male') activeGend = gend_emoji.m;
-		else if (active.gender === 'Female') activeGend = gend_emoji.f;
+		if (active.gender === 'M') activeGend = gend_emoji.m;
+		else if (active.gender === 'F') activeGend = gend_emoji.f;
 		else activeGend = '';
-		if (opponent.gender === 'Male') opponentGend = gend_emoji.m;
-		else if (opponent.gender === 'Female') opponentGend = gend_emoji.f;
+		if (opponent.gender === 'M') opponentGend = gend_emoji.m;
+		else if (opponent.gender === 'F') opponentGend = gend_emoji.f;
 		else opponentGend = '';
 
 		// Assign user's active and opponent pokemon images path names for regular or shiny pokemon
@@ -371,7 +373,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 				p++;
 			}
 
-			let opponentTeam = [];
+			const opponentTeam = [];
 			for (const pokemon of oppParty) {
 				const teamMember = {
 					name: pokemon.pokemon,
@@ -647,7 +649,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					let hurtBy = item[4].split('[from] ')[1],
 						sourceAbility = null;
 					if (hurtBy.indexOf('ability') !== -1) {
-						sourceAbility = hurtBy.split(' ')[1];
+						sourceAbility = hurtBy.split(': ')[1];
 						hurtBy = 'ability';
 					}
 
@@ -1135,7 +1137,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		if (battle.opponent.type === 'Trainer') a = 1.5;
 		if (pokemon.item === 'Lucky Egg') e = 1.5;
 		if (battle.participated.indexOf(position) === -1) s = 2;
-		if ((profile.firstName + ' ' + profile.lastName) !== pokemon.OT) t = 1.5;
+		if (pokemon.currentTrainer !== pokemon.originalTrainer) t = 1.5;
 
 		let pokeName = pokemon.nickname,
 			newMoveset = pokemon.moves,

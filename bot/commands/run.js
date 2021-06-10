@@ -18,7 +18,9 @@ module.exports = {
 
 					const battle = await Battle.findOneAndRemove({ _id: profile.battleID });
 					for (const pokemon of battle.opponentParty) {
-						await Pokemon.findOneAndRemove({ _id: pokemon.id });
+						await Pokemon.findOneAndRemove({ _id: pokemon._id }, () => {
+							console.log('Pokemon successfully deleted with following ID: ' + pokemon._id);
+						});
 					}
 
 					// Update user's profile with battle ID removed.

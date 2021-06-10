@@ -73,8 +73,9 @@ module.exports = {
 						// create wild pokemon object and instance in database,
 						// along with opponent party array for accessing pokemon info in-battle
 						console.log(wildpoke);
-						const wildPokemon = genPokemon(wildpoke, '', wildLevel, profile, 'Wild');
-						await Pokemon.create(wildPokemon);
+						let wildPokemon = genPokemon(wildpoke, '', wildLevel, profile, 'Wild');
+						wildPokemon = await Pokemon.create(wildPokemon);
+						console.log('New Pokémon assigned ID: ' + wildPokemon._id);
 						const oppParty = [wildPokemon];
 
 						// create playerTeam array to insert in battle object,
@@ -89,7 +90,7 @@ module.exports = {
 							if (tempPoke.status === 'Fainted') {
 								fainted.push(i);
 							}
-							playerTeam.push({ id: pokemonID, nickname: tempPoke.nickname, pokemon: tempPoke.pokemon });
+							playerTeam.push({ _id: pokemonID, nickname: tempPoke.nickname, pokemon: tempPoke.pokemon });
 							i++;
 						}
 
@@ -98,16 +99,16 @@ module.exports = {
 							playerID: userID,
 							party: playerTeam,
 							active: {
-								id: playerTeam[0].id,
+								_id: playerTeam[0].id,
 								position: 0,
 								boosts: { atk: 0, def: 0, spa: 0, spd: 0,
 									spe: 0, accuracy: 0, evasion: 0 },
 								effects: [],
 							},
 							fainted: [],
-							opponentParty: [{ id: wildPokemon._id, pokemon: wildPokemon.pokemon }],
+							opponentParty: [{ _id: wildPokemon._id, pokemon: wildPokemon.pokemon }],
 							opponentActive: {
-								id: wildPokemon._id,
+								_id: wildPokemon._id,
 								position: 0,
 								boosts: { atk: 0, def: 0, spa: 0, spd: 0,
 									spe: 0, accuracy: 0, evasion: 0 },
