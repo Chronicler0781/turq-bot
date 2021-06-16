@@ -49,6 +49,7 @@ module.exports = function generatePokemon(pokemon, nname, level, profile, type, 
 		currentTrainer: owner,
 		originalTrainer: owner,
 		moves: moveset,
+		setMoves: moveset.length > 4 ? moveset.slice(-4) : moveset,
 		exp: {
 			current: exp.current,
 			percentage: exp.percent,

@@ -264,6 +264,42 @@ function getStats(pokemon, level, natureMultipliers) {
 	return stats;
 }
 
+// Description: Initiates X number of boxes in the player's PC
+function initiateNewBox(boxes) {
+	boxes.push({
+		a1: null,
+		a2: null,
+		a3: null,
+		a4: null,
+		a5: null,
+		a6: null,
+		b1: null,
+		b2: null,
+		b3: null,
+		b4: null,
+		b5: null,
+		b6: null,
+		c1: null,
+		c2: null,
+		c3: null,
+		c4: null,
+		c5: null,
+		c6: null,
+		d1: null,
+		d2: null,
+		d3: null,
+		d4: null,
+		d5: null,
+		d6: null,
+		e1: null,
+		e2: null,
+		e3: null,
+		e4: null,
+		e5: null,
+		e6: null,
+	});
+	return boxes;
+}
 
 // Descrition: This function checks if a new Pokémon is shiny
 function isShiny() {
@@ -312,6 +348,6 @@ function upsertMoveset(pokemon, level, moveset, leveledUp) {
 
 module.exports = {
 	expLookup, getAbility, getGender, getItem,
-	getNature, getStats, isShiny, rng,
-	upsertMoveset,
+	getNature, getStats, initiateNewBox, isShiny,
+	rng, upsertMoveset,
 };

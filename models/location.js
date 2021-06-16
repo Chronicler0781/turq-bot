@@ -7,7 +7,7 @@ const ferrySubSchema = new Schema({
 }, { _id: false });
 
 const pokeSubSchema = new Schema({
-	name: { type: String, ref: 'DexEntry' },
+	name: String,
 	minLvl: Number,
 	maxLvl: Number,
 }, { _id: false });

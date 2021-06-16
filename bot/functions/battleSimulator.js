@@ -46,7 +46,8 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		turnSummary = ['Please select an option from the menu above.'];
 
 	const Sim = require('../../../pokemon-showdown');
-	const stream = new Sim.BattleStream();
+	const streams = Sim.getPlayerStreams(new Sim.BattleStream());
+	const p2 = new Sim.RandomPlayerAI(streams.p2);
 
 	// iterate battle turns while battle is unfinished.
 	while (!battleDone) {
@@ -60,9 +61,12 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 			turnSummaryTitle = `Turn ${battle.turn - 1}`;
 		}
 
-
 		// reset actionTaken boolean for new turn
 		actionTaken = false;
+
+		if (!turnSummary) {
+			turnSummary.push('The turn summary is empty.');
+		}
 
 		// Keep original menu active until a turn choice has been made.
 		while (!actionTaken) {
@@ -81,12 +85,12 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					{ name: `__${turnSummaryTitle}:__`, value: `${turnSummary.join('\n')}` },
 					{
 						name: `__Lvl.${active.level} ${active.pokemon} ${activeGend}__`,
-						value: `**HP:** ${active.currentHP}/${active.maxHP}`,
+						value: `**HP:** ${active.currentHP}/${active.maxHP}${active.status}`,
 						inline: true,
 					},
 					{
 						name: `__Lvl.${opponent.level} ${opponent.pokemon} ${opponentGend}__`,
-						value: `**HP:** ${opponent.currentHP}/${opponent.maxHP}`,
+						value: `**HP:** ${opponent.currentHP}/${opponent.maxHP}${opponent.status}`,
 						inline: true,
 					},
 				)
@@ -117,6 +121,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							noOptionPicked = false;
 							firstMenu = false;
 							await runFightEmbed();
+							console.log('RunFightEmbed finished.');
 							// await embedMessage.delete();
 							break;
 						}
@@ -154,6 +159,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					noOptionPicked = false;
 					actionTaken = true;
 					battleDone = true;
+					ranAway = true;
 					await message.channel.send('>>> Error: Your battle has timed out and has been aborted. Please start a new battle later.');
 				}
 			}
@@ -165,6 +171,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 	if (winnerDetermined) {
 		turnSummaryTitle = 'Battle End';
+		console.log('TurnSummary at end: \n' + turnSummary);
 		const endEmbed = new Discord.MessageEmbed()
 			.setColor('#0099ff')
 			.setAuthor(`${location.name}`)
@@ -306,10 +313,14 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 			for (let i = 0; i < moveEmojis.length; i++) {
 				if (moveEmojis[i] === collected.first().emoji.name && moveEmojis[i] !== '❎') {
 					const moveChoice = moveOptions[i].slice(4);
+					actionTaken = true;
 					await battleInitiate(moveChoice);
+					console.log('TurnSummary in fightembed: \n' + turnSummary);
+					return;
+					/* console.log('Battle phase over.');
 					actionTaken = true;
 					// await embedMessage2.delete();
-					return;
+					return;*/
 				}
 				else if (moveEmojis[i] === collected.first().emoji.name && moveEmojis[i] === '❎') {
 					// actionTaken = false;
@@ -327,800 +338,854 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		}
 	}
 
-	async function battleInitiate(activeMove) {
+	function battleInitiate(activeMove) {
+		// eslint-disable-next-line no-unused-vars
+		return new Promise(function(resolve, reject) {
 
-		let data = null;
+			console.log('Promise initiated.');
 
-		if (!simInitiated) {
-			const spec = {
-				formatid: 'gen8customgame',
-			};
-
-			// Example:
-			// const team = {
-			//     name: 'Diancie',
-			//     species: 'Diancie',
-			//     gender: 'N',
-			//     moves: [ 'diamondstorm', 'earthpower', 'moonblast', 'hiddenpowerfire' ],
-			//     ability: 'Clear Body',
-			//     evs: { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
-			//     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-			//     item: 'Diancite',
-			//     level: 80,
-			//     shiny: false
-			// },
-
-			const playerTeam = [],
-				partyState = [];
-			let p = 0;
-			for (const pokemon of party) {
-				const teamMember = {
-					name: pokemon.pokemon,
-					species: pokemon.pokemon,
-					gender: pokemon.gender.charAt(0),
-					happiness: pokemon.happiness,
-					nature: pokemon.nature,
-					moves: pokemon.moves,
-					ability: pokemon.abilityNo,
-					evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-					ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-					item: pokemon.heldItem !== 'None' ? active.heldItem : '',
-					level: pokemon.level,
-					shiny: pokemon.shiny,
+			if (!simInitiated) {
+				const spec = {
+					formatid: 'gen8customgame',
 				};
-				playerTeam.push(teamMember);
-				partyState.push({ position: p, hp: pokemon.currentHP, status: pokemon.status });
-				p++;
-			}
 
-			const opponentTeam = [];
-			for (const pokemon of oppParty) {
-				const teamMember = {
-					name: pokemon.pokemon,
-					species: pokemon.pokemon,
-					gender: pokemon.gender.charAt(0),
-					happiness: pokemon.happiness,
-					nature: pokemon.nature,
-					moves: pokemon.moves,
-					ability: pokemon.abilityNo,
-					evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-					ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-					item: pokemon.heldItem !== 'None' ? active.heldItem : '',
-					level: pokemon.level,
-					shiny: pokemon.shiny,
+				const playerTeam = [],
+					partyState = [];
+				let p = 0;
+				for (const pokemon of party) {
+					const teamMember = {
+						name: pokemon.pokemon,
+						species: pokemon.pokemon,
+						gender: pokemon.gender.charAt(0),
+						happiness: pokemon.happiness,
+						nature: pokemon.nature,
+						moves: pokemon.moves,
+						ability: pokemon.abilityNo,
+						evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+						ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+						item: pokemon.heldItem !== 'None' ? active.heldItem : '',
+						level: pokemon.level,
+						shiny: pokemon.shiny,
+					};
+					playerTeam.push(teamMember);
+					partyState.push({ position: p, hp: pokemon.currentHP, status: pokemon.status });
+					p++;
+				}
+
+				const opponentTeam = [];
+				for (const pokemon of oppParty) {
+					const teamMember = {
+						name: pokemon.pokemon,
+						species: pokemon.pokemon,
+						gender: pokemon.gender.charAt(0),
+						happiness: pokemon.happiness,
+						nature: pokemon.nature,
+						moves: pokemon.moves,
+						ability: pokemon.abilityNo,
+						evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+						ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+						item: pokemon.heldItem,
+						level: pokemon.level,
+						shiny: pokemon.shiny,
+					};
+					opponentTeam.push(teamMember);
+				}
+
+				const p1spec = {
+					name: 'Player',
+					team: packTeam(playerTeam),
 				};
-				opponentTeam.push(teamMember);
+				const p2spec = {
+					name: 'Opponent',
+					team: packTeam(opponentTeam),
+				};
+				p2.start();
+
+				streams.omniscient.write(`>start ${JSON.stringify(spec)}`);
+				streams.omniscient.write(`>player p1 ${JSON.stringify(p1spec)}`);
+				streams.omniscient.write(`>player p2 ${JSON.stringify(p2spec)}`);
+				streams.omniscient.write('>p1 team 123456');
+				streams.omniscient.write('>p2 team 123456');
+				streams.omniscient.write(`>updatePlayerState ${JSON.stringify(partyState)}`);
+
+				simInitiated = true;
 			}
 
-			const p1spec = {
-				name: 'Player',
-				team: packTeam(playerTeam),
-			};
-			const p2spec = {
-				name: 'Opponent',
-				team: packTeam(opponentTeam),
-			};
+			(async () => {
+				// eslint-disable-next-line no-unused-vars
+				let i = 0,
+					results = null,
+					prevLine = null,
+					stat = null,
+					tempHP = null,
+					sourceName = null,
+					targetName = null,
+					tempPoke = null,
+					healLocationPhrase = '',
+					prizeMoneyBase = null,
+					prizeMoney = null,
+					maxLevel = 0,
+					newLocation = null;
 
-			stream.write(`>start ${JSON.stringify(spec)}`);
-			stream.write(`>player p1 ${JSON.stringify(p1spec)}`);
-			stream.write(`>player p2 ${JSON.stringify(p2spec)}`);
-			stream.write('>p1 team 123456');
-			stream.write('>p2 team 123456');
-			stream.write(`>updatePlayerState ${JSON.stringify(partyState)}`);
+				let activeName = active.nickname;
+				if (!activeName) activeName = active.pokemon;
 
-			data = stream.buf;
-			console.log(data);
-			simInitiated = true;
-		}
-
-		(async () => {
-			// eslint-disable-next-line no-unused-vars
-			for await (const output of stream) {
-				// console.log(output);
-			}
-		})();
-
-		let oppMove = null;
-		if (battle.opponent.type === 'Wild') {
-			oppMove = Math.floor(Math.random() *
-                (opponent.moves.length - 1 + 1) + (1 - 0));
-		}
-		else {
-			// Function for trainer AI
-			oppMove = 1;
-		}
-
-		stream.write(`>p1 move ${activeMove}`);
-		stream.write(`>p2 move ${oppMove}`);
-
-		data = stream.buf;
-		// console.log('data: \n\n'+data+'\n\nFin');
-
-		let activeName = active.nickname;
-		if (!activeName) activeName = active.pokemon;
-
-		let foesName = `The wild ${opponent.pokemon}`;
-		if (battle.opponent.type !== 'Wild') {
-			foesName = `The opposing ${opponent.pokemon}`;
-		}
-
-		let stat = null,
-			tempHP = null,
-			sourceName = null,
-			targetName = null,
-			dmgDealt = null,
-			dmgHealed = null,
-			healLocationPhrase = '',
-			prizeMoneyBase = null,
-			prizeMoney = null,
-			maxLevel = 0,
-			newLocation = null;
-
-		turnSummary = [];
-		let prevLine = null,
-			result = data[data.length - 1].split('\n');
-		if (result[0] === 'end') {
-			result = data[data.length - 2].split('\n');
-		}
-		console.log(result);
-
-		for (const line of result) {
-			if (line === prevLine) {
-				continue;
-			}
-
-			const item = line.split('|');
-			// console.log('item: '+item);
-
-			switch (item[1]) {
-
-			// WIP - ATTACKER's MOVE/effect targeted at POKEMON was blocked by EFFECT
-			// |-block|POKEMON|EFFECT|MOVE|ATTACKER
-			case '-block':
-
-				break;
-
-				// POKEMON's STAT is boosted by AMOUNT levels, to a max of 6
-				// |-boost|POKEMON|STAT|AMOUNT
-			case '-boost':
-				switch (item[3]) {
-				case 'atk':
-					stat = 'Attack';
-					break;
-				case 'def':
-					stat = 'Defense';
-					break;
-				case 'spa':
-					stat = 'Sp. Atk';
-					break;
-				case 'spd':
-					stat = 'Sp. Def';
-					break;
-				case 'spe':
-					stat = 'Speed';
-					break;
-				case 'accuracy':
-					stat = 'accuracy';
-					break;
-				case 'evasion':
-					stat = 'evasiveness';
+				let foesName = `The wild ${opponent.pokemon}`;
+				if (battle.opponent.type !== 'Wild') {
+					foesName = `The opposing ${opponent.pokemon}`;
 				}
 
-				if (item[2].split(':')[0] === 'p1a') {
-					targetName = activeName;
-					if (battle.active.boosts[item[3]] < 6) {
-						switch (item[4]) {
-						case '1':
-							battle.active.boosts[item[3]] += 1;
-							turnSummary.push(`${targetName}'s ${stat} rose! [${battle.active.boosts[item[3]]}]`);
-							break;
-						case '2':
-							battle.active.boosts[item[3]] += 2;
-							if (battle.active.boosts[item[3]] > 6) battle.active.boosts[item[3]] = 6;
-							turnSummary.push(`${targetName}'s ${stat} rose sharply! [${battle.active.boosts[item[3]]}]`);
-							break;
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-							battle.active.boosts[item[3]] += parseInt(item[4], 10);
-							if (battle.active.boosts[item[3]] > 6) battle.active.boosts[item[3]] = 6;
-							turnSummary.push(`${targetName}'s ${stat} rose drastically! [${battle.active.boosts[item[3]]}]`);
-							break;
-						}
-					}
-					else {
-						turnSummary.push(`${targetName}'s ${stat} won't go any higher!`);
-					}
-				}
-				else if (battle.opponentActive.boosts[item[3]] < 6) {
-					targetName = foesName;
-					switch (item[4]) {
-					case '1':
-						battle.opponentActive.boosts[item[3]] += 1;
-						turnSummary.push(`${targetName}'s ${stat} rose! [${battle.opponentActive.boosts[item[3]]}]`);
-						break;
-					case '2':
-						battle.opponentActive.boosts[item[3]] += 2;
-						if (battle.opponentActive.boosts[item[3]] > 6) battle.opponentActive.boosts[item[3]] = 6;
-						turnSummary.push(`${targetName}'s ${stat} rose sharply! [${battle.opponentActive.boosts[item[3]]}]`);
-						break;
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-						battle.opponentActive.boosts[item[3]] += parseInt(item[4], 10);
-						if (battle.opponentActive.boosts[item[3]] > 6) battle.opponentActive.boosts[item[3]] = 6;
-						turnSummary.push(`${targetName}'s ${stat} rose drastically! [${battle.opponentActive.boosts[item[3]]}]`);
-						break;
-					}
-				}
-				else {
-					turnSummary.push(`${targetName}'s ${stat} won't go any higher!`);
-				}
-				break;
+				for await (const output of streams.omniscient) {
+					console.log('\nStream Output ' + i + ': ');
+					results = output.split('\n');
+					turnSummary = [];
 
-				// WIP - POKEMON was not able to do something (potentially MOVE) because of REASON.
-				// |cant|POKEMON|REASON|*MOVE*
-			case 'cant':
+					for (const line of results) {
+						console.log(line);
+						if (line === prevLine) continue;
+						const item = line.split('|');
 
-				break;
+						switch (item[1]) {
 
-				// WIP  -
+						// WIP - ATTACKER's MOVE/effect targeted at POKEMON was blocked by EFFECT
+						// |-block|POKEMON|EFFECT|MOVE|ATTACKER
+						case '-block':
 
-				// WIP - specified POKEMON recovers from STATUS
-				// |-curestatus|POKEMON|STATUS
-			case '-curestatus':
-
-				break;
-
-				// WIP - POKEMON has used move to cure all team status effects (heal bell)
-				// |-cureteam|POKEMON
-			case '-cureteam':
-
-				break;
-
-				// WIP - clears all bof the boosts of all POKEMON (Ex: Haze)
-				// |-clearallboost
-			case '-clearallboost':
-
-				break;
-
-				// WIP - Clears all of the boosts of specified POKEMON (Ex: Clear Smog)
-				// |-clearboost|POKEMON
-			case '-clearboost':
-
-				break;
-
-				// WIP - Clears all negative boosts from the target POKEMON (Ex: z-effects)
-				// |-clearnegativeboost|POKEMON
-			case '-clearnegativeboost':
-
-				break;
-
-				// WIP - Clears all positive boosts of TARGET due to EFFECT of POKEMON (Ex: Spectral Thief)
-				// |-clearpositiveboost|TARGET|POKEMON|EFFECT
-			case '-clearpositiveboost':
-
-				break;
-
-				// WIP - Copies boost from SOURCE to TARGET (Ex: Psych Up)
-				// |-copyboost|SOURCE|TARGET
-			case '-copyboost':
-
-				break;
-
-				// Critical hit was perfomed on POKEMON
-				// |-crit|POKEMON
-			case '-crit':
-				turnSummary.push('It\'s a critical hit!');
-				break;
-
-				// WIP - POKEMON has changed formes temporarily (-formechange) or permanently (detailschange) for duration of battle
-				// |detailschange|POKEMON|DETAILS|HP STATUS   OR   |-formechange|POKEMON|SPECIES|HP STATUS
-			case 'detailschange':
-			case '-formechange':
-
-				break;
-
-				// Set new HP status for specified POKEMON by SOURCE (optional)
-				// |-damage|POKEMON|HP STATUS|SOURCE
-			case '-damage':
-				if (item[3].slice(-3) === 'fnt') tempHP = item[3].split(' ')[0];
-				else tempHP = item[3].split('/')[0];
-
-				if (item[2].split(':')[0] === 'p1a') {
-					dmgDealt = active.currentHP - tempHP;
-					active.currentHP = tempHP;
-					targetName = activeName;
-				}
-				else {
-					dmgDealt = opponent.currentHP - tempHP;
-					opponent.currentHP = tempHP;
-					targetName = foesName;
-				}
-
-				// If hurt by something other than an opponent's move
-				if (item[4]) {
-					if (item[5]) {
-						if (item[5].split(' ')[1] === 'p1a:') { sourceName = activeName; }
-						else { sourceName = foesName; }
-					}
-					let hurtBy = item[4].split('[from] ')[1],
-						sourceAbility = null;
-					if (hurtBy.indexOf('ability') !== -1) {
-						sourceAbility = hurtBy.split(': ')[1];
-						hurtBy = 'ability';
-					}
-
-					switch (hurtBy) {
-					case 'ability':
-						turnSummary.push(`${targetName} was hurt by ${sourceName}'s ${sourceAbility}!`);
-						break;
-					case 'psn':
-						turnSummary.push(`${targetName} was hurt by poison!`);
-						break;
-					case 'recoil':
-						turnSummary.push(`${targetName} was hurt by recoil!`);
-						break;
-					default:
-						turnSummary.push(`${targetName} was hurt by something undefined!`);
-						break;
-					}
-				}
-				turnSummary[turnSummary.length - 1] = turnSummary[turnSummary.length - 1].concat(` *[-${dmgDealt}HP]*`);
-				break;
-
-				// WIP - same as switch, except forced. If opponent, reset participated. If player, add to participated
-				// WIP - swap active or opponent active with another mon. If opponent, reset participated. If player, add to participated
-				// |drag|POKEMON|DETAILS|HP STATUS   OR   |switch|POKEMON|DETAILS|HP STATUS
-			case 'drag':
-			case 'switch':
-
-				break;
-
-				// WIP - ACTION has failed against specific target POKEMON
-				// |-fail|POKEMON|ACTION
-			case '-fail':
-
-				break;
-
-				// WIP - If player, request new switch in. If opponent, apply experience, level ups, evolution tracker
-				// |faint|POKEMON
-			case 'faint':
-				if (item[2].split(':')[0] === 'p1a') {
-					active.status = 'Fainted';
-					battle.fainted.push(battle.active.position);
-					party[battle.active.position] = active;
-					turnSummary.push(`${activeName} fainted!`);
-
-					if (party.length !== battle.fainted.length) {
-						// switch menu
-					}
-				}
-				else {
-					opponent.status = 'Fainted';
-					battle.opponentFainted.push(battle.opponentActive.position);
-					oppParty[battle.opponentActive.position] = opponent;
-					turnSummary.push(`${foesName} fainted!`);
-					turnSummary.push('-------------------------');
-
-					// Award Exp to each party Pokemon
-					party[battle.active.position] = active;
-					for (let i = 0; i < party.length; i++) {
-						if (battle.fainted.indexOf(i) === -1) {
-							party[i] = awardExp(party[i], i);
-						}
-					}
-					active = party[battle.active.position];
-
-					if (oppParty.length !== battle.opponentFainted.length) {
-						battle.participated = [];
-						// Switch out opponent's pokemon
-					}
-				}
-				break;
-
-				// WIP -
-				// |-fieldend|CONDITION
-			case '-fieldend':
-
-				break;
-
-				// WIP -
-				// |-fieldstart|CONDITION
-			case '-fieldstart':
-
-				break;
-
-				// Set new HP STATUS for specified POKEMON
-				// |-heal|POKEMON|HP STATUS|
-			case '-heal':
-				tempHP = item[3].split('/')[0];
-				if (item[2].split(':')[0] === 'p1a') {
-					dmgHealed = tempHP - active.currentHP;
-					active.currentHP = tempHP;
-					turnSummary.push(`${activeName} recovered ${dmgHealed}HP!`);
-				}
-				else {
-					dmgHealed = tempHP - opponent.currentHP;
-					opponent.currentHP = tempHP;
-					turnSummary.push(`${foesName} recovered ${dmgHealed}HP!`);
-				}
-				break;
-
-				// WIP - Inverts the boosts of the specified POKEMON
-				// |-invertboost|POKEMON
-			case '-invertboost':
-
-				break;
-
-				// The move used by SOURCE missed the TARGET
-				// |-miss|SOURCE|TARGET
-			case '-miss':
-				if (item[3].split(':')[0] === 'p1a') {
-					turnSummary.push(`${activeName} avoided the attack!`);
-				}
-				else {
-					turnSummary.push(`${foesName} avoided the attack!`);
-				}
-				break;
-
-				// IMPROVE LATER - fetch move description
-				// |move|POKEMON|MOVE|TARGET
-			case 'move':
-				if (item[2].split(':')[0] === 'p1a') {
-					turnSummary.push(`${activeName} used ${activeMove}!`);
-				}
-				else {
-					turnSummary.push(`${foesName} used ${opponent.moves[oppMove - 1]}!`);
-				}
-				break;
-
-				// Future Implement - Zoroark Illusion has ended
-				// |replace|POKEMON|DETAILS|HP STATUS
-			case 'replace':
-				break;
-
-				// Resisted hit was perfomed on POKEMON
-				// |-resisted|POKEMON
-			case '-resisted':
-				turnSummary.push('It\'s not very effective!');
-				break;
-
-				// WIP - specified POKEMON's STAT is set to specific AMOUNT (Ex: Anger Point, Belly Drum)
-				// |-setboost|POKEMON|STAT|AMOUNT
-			case '-setboost':
-
-				break;
-
-				// WIP - specified POKEMON now has HP hitpoints
-				// |-sethp|POKEMON|HP
-			case '-sethp':
-
-				break;
-
-				// WIP - specified POKEMON used a MOVE lasting duration of the move (Ex: Grudge, Destiny Bond)
-				// |-singlemove|POKEMON|MOVE
-			case '-singlemove':
-
-				break;
-
-				// WIP - specified POKEMON used a MOVE lasting duration of the turn (Ex: Protect, Focus Punch, Roost)
-				// |-singleturn|POKEMON|MOVE
-			case '-singleturn':
-
-				break;
-
-				// WIP - specified POKEMON has been inflcited with STATUS
-				// |-status|POKEMON|STATUS
-				// psn - regular poison
-				// tox - toxic-induced badly poisoned
-			case '-status':
-				if (item[2].split(':')[0] === 'p1a') targetName = `${activeName}`;
-				else targetName = `${foesName}`;
-
-				switch (item[3]) {
-
-				case 'par':
-					// X is paralyzed!
-					// It can't move!
-					turnSummary.push(`${targetName} was paralyzed!`);
-					break;
-				case 'psn':
-					turnSummary.push(`${targetName} was poisoned!`);
-					break;
-				case 'slp':
-					turnSummary.push(`${targetName} fell asleep!`);
-					break;
-				case 'tox':
-					turnSummary.push(`${targetName} was badly poisoned!`);
-					break;
-				default:
-					turnSummary.push(`${targetName} was afflicted with an undefined status!`);
-				}
-
-				break;
-
-				// super-effective hit was perfomed on POKEMON
-				// |-supereffective|POKEMON
-			case '-supereffective':
-				turnSummary.push('It\'s super effective!');
-				break;
-
-				// Future Implement: Double Battles
-				// |swap|POKEMON|POSITION
-			case 'swap':
-				break;
-
-				// WIP - Swaps the boosts from STATS between the SOURCE and TARGET Pokemon
-				// |-swapboost|SOURCE|TARGET|STATS
-			case '-swapboost':
-
-				break;
-
-				// WIP - Player + opponent black out, no money lost, all mon healed and statuses set to normal, formes reset.
-				// |tie
-			case 'tie':
-				battleDone = true;
-				winnerDetermined = true;
-
-				// Return player to last visited Pokémon Center/home
-				if (profile.lastHealLocation === 'leddintown') {
-					healLocationPhrase = 'home';
-				}
-				else {
-					newLocation = await Location.findOne({ _id: profile.lastHealLocation });
-					healLocationPhrase = `to the ${newLocation.name} Pokémon Center`;
-				}
-				profile.currentLocation = profile.lastHealLocation;
-				turnSummary.push(`You have no more Pokémon that can fight!\n
-                        You were discouraged by the tie!\n
-                        You scurry back ${healLocationPhrase}, protecting your exhausted Pokémon from any futher harm...`);
-
-				// Set HP, status, formes to normal
-				break;
-
-				// Sync battle object turn count with simulator turn count.
-				// |turn|AMOUNT
-			case 'turn':
-				if (item[2] !== battle.turn) battle.turn = item[2];
-				break;
-
-				// POKEMON's STAT is unboosted by AMOUNT levels, to a max of -6
-				// |-unboost|POKEMON|STAT|AMOUNT
-			case '-unboost':
-				switch (item[3]) {
-				case 'atk':
-					stat = 'Attack';
-					break;
-				case 'def':
-					stat = 'Defense';
-					break;
-				case 'spa':
-					stat = 'Sp. Atk';
-					break;
-				case 'spd':
-					stat = 'Sp. Def';
-					break;
-				case 'spe':
-					stat = 'Speed';
-					break;
-				case 'accuracy':
-					stat = 'accuracy';
-					break;
-				case 'evasion':
-					stat = 'evasiveness';
-				}
-
-				if (item[2].split(':')[0] === 'p1a') {
-					if (battle.active.boosts[item[3]] > -6) {
-						targetName = activeName;
-						switch (item[4]) {
-						case '1':
-							battle.active.boosts[item[3]] -= 1;
-							turnSummary.push(`${targetName}'s ${stat} fell! [${battle.active.boosts[item[3]]}]`);
-							break;
-						case '2':
-							battle.active.boosts[item[3]] -= 2;
-							if (battle.active.boosts[item[3]] < -6) battle.active.boosts[item[3]] = -6;
-							turnSummary.push(`${targetName}'s ${stat} harshly fell! [${battle.active.boosts[item[3]]}]`);
-							break;
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-							battle.active.boosts[item[3]] -= parseInt(item[4], 10);
-							if (battle.active.boosts[item[3]] < -6) battle.active.boosts[item[3]] = -6;
-							turnSummary.push(`${targetName}'s ${stat} severely fell! [${battle.active.boosts[item[3]]}]`);
-							break;
-						}
-					}
-					else {
-						turnSummary.push(`${targetName}'s ${stat} won't go any lower!`);
-					}
-				}
-				else if (battle.opponentActive.boosts[item[3]] > -6) {
-					targetName = foesName;
-					switch (item[4]) {
-					case '1':
-						battle.opponentActive.boosts[item[3]] -= 1;
-						turnSummary.push(`${targetName}'s ${stat} fell! [${battle.opponentActive.boosts[item[3]]}]`);
-						break;
-					case '2':
-						battle.oppopnentActive.boosts[item[3]] -= 2;
-						if (battle.opponentActive.boosts[item[3]] < -6) battle.opponentActive.boosts[item[3]] = -6;
-						turnSummary.push(`${targetName}'s ${stat} harshly fell! [${battle.opponentActive.boosts[item[3]]}]`);
-						break;
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-						battle.opponentActive.boosts[item[3]] -= parseInt(item[4], 10);
-						if (battle.opponentActive.boosts[item[3]] < -6) battle.opponentActive.boosts[item[3]] = -6;
-						turnSummary.push(`${targetName}'s ${stat} severely fell! [${battle.opponentActive.boosts[item[3]]}]`);
-						break;
-					}
-				}
-				else {
-					turnSummary.push(`${targetName}'s ${stat} won't go any lower!`);
-				}
-				break;
-
-				// WIP - Indicates WEATHER that is currently in effect. [upkeep] if weather was activated previously and still in effect, 'none' if weather expired.
-				// |-weather|WEATHER
-			case 'weather':
-
-				break;
-
-				// WIP - If player, apply experience, level ups, win money (if trainer), evolutions. If opponent, black out, take money from player.
-				// |win|USER
-			case 'win':
-
-				if (item[2] === 'Player') {
-					battleDone = true;
-					winnerDetermined = true;
-					winner = true;
-
-					// If trainer, determine amount of prize money won and post to TurnSummary
-					// Increase happiness if
-					if (battle.opponent.type !== 'Wild') {
-
-						switch (battle.opponent.level) {
-						case 'beginner':
-							prizeMoneyBase = 60;
 							break;
 
-						case 'novice':
-							prizeMoneyBase = 80;
-							break;
+						// POKEMON's STAT is boosted by AMOUNT levels, to a max of 6
+						// |-boost|POKEMON|STAT|AMOUNT
+						case '-boost':
+							switch (item[3]) {
+							case 'atk':
+								stat = 'Attack';
+								break;
+							case 'def':
+								stat = 'Defense';
+								break;
+							case 'spa':
+								stat = 'Sp. Atk';
+								break;
+							case 'spd':
+								stat = 'Sp. Def';
+								break;
+							case 'spe':
+								stat = 'Speed';
+								break;
+							case 'accuracy':
+								stat = 'accuracy';
+								break;
+							case 'evasion':
+								stat = 'evasiveness';
+							}
 
-						case 'intermediate':
-							prizeMoneyBase = 100;
-							break;
-
-						case 'advanced':
-							prizeMoneyBase = 120;
-							break;
-
-						case 'expert':
-							prizeMoneyBase = 160;
-							break;
-
-						case 'special':
-							prizeMoneyBase = 200;
-							if (battle.opponent.trainerType === 'Leader' || battle.opponent.trainerType === 'Elite Four' || battle.opponent.trainerType === 'Champion') {
-								for (const position of battle.participated) {
-									if (party[position].happiness < 100) {
-										party[position].happiness += 5;
+							if (item[2].split(':')[0] === 'p1a') {
+								targetName = activeName;
+								if (battle.active.boosts[item[3]] < 6) {
+									switch (item[4]) {
+									case '1':
+										battle.active.boosts[item[3]] += 1;
+										turnSummary.push(`${targetName}'s ${stat} rose! [${battle.active.boosts[item[3]]}]`);
+										break;
+									case '2':
+										battle.active.boosts[item[3]] += 2;
+										if (battle.active.boosts[item[3]] > 6) battle.active.boosts[item[3]] = 6;
+										turnSummary.push(`${targetName}'s ${stat} rose sharply! [${battle.active.boosts[item[3]]}]`);
+										break;
+									case '3':
+									case '4':
+									case '5':
+									case '6':
+										battle.active.boosts[item[3]] += parseInt(item[4], 10);
+										if (battle.active.boosts[item[3]] > 6) battle.active.boosts[item[3]] = 6;
+										turnSummary.push(`${targetName}'s ${stat} rose drastically! [${battle.active.boosts[item[3]]}]`);
+										break;
 									}
-									else if (party[position].happiness < 200) {
-										party[position].happiness += 4;
-									}
-									else if (party[position].happiness < 253) {
-										party[position].happiness += 3;
-									}
-									else if (party[position].happiness < 255) {
-										party[position].happiness = 255;
-									}
+								}
+								else {
+									turnSummary.push(`${targetName}'s ${stat} won't go any higher!`);
+								}
+							}
+							else if (battle.opponentActive.boosts[item[3]] < 6) {
+								targetName = foesName;
+								switch (item[4]) {
+								case '1':
+									battle.opponentActive.boosts[item[3]] += 1;
+									turnSummary.push(`${targetName}'s ${stat} rose! [${battle.opponentActive.boosts[item[3]]}]`);
+									break;
+								case '2':
+									battle.opponentActive.boosts[item[3]] += 2;
+									if (battle.opponentActive.boosts[item[3]] > 6) battle.opponentActive.boosts[item[3]] = 6;
+									turnSummary.push(`${targetName}'s ${stat} rose sharply! [${battle.opponentActive.boosts[item[3]]}]`);
+									break;
+								case '3':
+								case '4':
+								case '5':
+								case '6':
+									battle.opponentActive.boosts[item[3]] += parseInt(item[4], 10);
+									if (battle.opponentActive.boosts[item[3]] > 6) battle.opponentActive.boosts[item[3]] = 6;
+									turnSummary.push(`${targetName}'s ${stat} rose drastically! [${battle.opponentActive.boosts[item[3]]}]`);
+									break;
+								}
+							}
+							else {
+								turnSummary.push(`${targetName}'s ${stat} won't go any higher!`);
+							}
+							break;
+
+							// WIP - POKEMON was not able to do something (potentially MOVE) because of REASON.
+							// |cant|POKEMON|REASON|*MOVE*
+						case 'cant':
+							// X is paralyzed!
+							// It can't move!
+							if (item[2].split(':')[0] === 'p1a') { sourceName = activeName; }
+							else { sourceName = foesName; }
+
+							switch (item[3]) {
+							case 'par':
+								turnSummary.push(`${sourceName} is paralyzed! It can't move!`);
+								break;
+							default:
+								turnSummary.push(`Something undefined prevented ${sourceName} from attacking!`);
+								break;
+							}
+
+							break;
+
+							// WIP  -
+							// ||
+						case '':
+							break;
+
+							// WIP - specified POKEMON recovers from STATUS
+							// |-curestatus|POKEMON|STATUS
+						case '-curestatus':
+
+							break;
+
+							// WIP - POKEMON has used move to cure all team status effects (heal bell)
+							// |-cureteam|POKEMON
+						case '-cureteam':
+
+							break;
+
+							// WIP - clears all bof the boosts of all POKEMON (Ex: Haze)
+							// |-clearallboost
+						case '-clearallboost':
+
+							break;
+
+							// WIP - Clears all of the boosts of specified POKEMON (Ex: Clear Smog)
+							// |-clearboost|POKEMON
+						case '-clearboost':
+
+							break;
+
+							// WIP - Clears all negative boosts from the target POKEMON (Ex: z-effects)
+							// |-clearnegativeboost|POKEMON
+						case '-clearnegativeboost':
+
+							break;
+
+							// WIP - Clears all positive boosts of TARGET due to EFFECT of POKEMON (Ex: Spectral Thief)
+							// |-clearpositiveboost|TARGET|POKEMON|EFFECT
+						case '-clearpositiveboost':
+
+							break;
+
+							// WIP - Copies boost from SOURCE to TARGET (Ex: Psych Up)
+							// |-copyboost|SOURCE|TARGET
+						case '-copyboost':
+
+							break;
+
+							// Critical hit was perfomed on POKEMON
+							// |-crit|POKEMON
+						case '-crit':
+							turnSummary.push('It\'s a critical hit!');
+							break;
+
+							// WIP - POKEMON has changed formes temporarily (-formechange) or permanently (detailschange) for duration of battle
+							// |detailschange|POKEMON|DETAILS|HP STATUS   OR   |-formechange|POKEMON|SPECIES|HP STATUS
+						case 'detailschange':
+						case '-formechange':
+
+							break;
+
+							// Set new HP status for specified POKEMON by SOURCE (optional)
+							// |-damage|POKEMON|HP STATUS|SOURCE
+						case '-damage':
+							if (item[3].slice(-3) === 'fnt') tempHP = item[3].split(' ')[0];
+							else tempHP = item[3].split('/')[0];
+
+							if (item[2].split(':')[0] === 'p1a') {
+								active.currentHP = tempHP;
+								targetName = activeName;
+							}
+							else {
+								opponent.currentHP = tempHP;
+								targetName = foesName;
+							}
+
+							// If hurt by something other than an opponent's move
+							if (item[4]) {
+								if (item[5]) {
+									if (item[5].split(' ')[1] === 'p1a:') { sourceName = activeName; }
+									else { sourceName = foesName; }
+								}
+								let hurtBy = item[4].split('[from] ')[1],
+									sourceAbility = null;
+								if (hurtBy.indexOf('ability') !== -1) {
+									sourceAbility = hurtBy.split(': ')[1];
+									hurtBy = 'ability';
+								}
+
+								switch (hurtBy) {
+								case 'ability':
+									turnSummary.push(`${targetName} was hurt by ${sourceName}'s ${sourceAbility}!`);
+									break;
+								case 'psn':
+									turnSummary.push(`${targetName} was hurt by poison!`);
+									break;
+								case 'recoil':
+									turnSummary.push(`${targetName} was hurt by recoil!`);
+									break;
+								default:
+									turnSummary.push(`${targetName} was hurt by something undefined!`);
+									break;
 								}
 							}
 							break;
+
+							// WIP - same as switch, except forced. If opponent, reset participated. If player, add to participated
+							// WIP - swap active or opponent active with another mon. If opponent, reset participated. If player, add to participated
+							// |drag|POKEMON|DETAILS|HP STATUS   OR   |switch|POKEMON|DETAILS|HP STATUS
+						case 'drag':
+						case 'switch':
+
+							break;
+
+							// WIP - The [*volatile* status] inflicted on POKEMON by EFFECT has ended.
+							// |-end|POKEMON|EFFECT
+						case '-end':
+							break;
+
+							// WIP - ITEM held by POKEMON has been destroyed due toEFFECT (move/ability)
+							// This will be [silent] if item's ownership changes.
+							// |-enditem|POKEMON|ITEM|[from]EFFECT
+							// POKEMON's ITEM has destroyed itself (consumed berries, air balloon)
+							// if berry is consumed, additional modifier |[eat] is used.
+							// |-enditem|POKEMON|ITEM|
+						case '-enditem':
+							break;
+
+							// WIP - ACTION has failed against specific target POKEMON
+							// |-fail|POKEMON|ACTION
+						case '-fail':
+							turnSummary.push('But it failed!');
+							break;
+
+							// WIP - If player, request new switch in. If opponent, apply experience, level ups, evolution tracker
+							// |faint|POKEMON
+						case 'faint':
+							if (item[2].split(':')[0] === 'p1a') {
+								active.status = 'Fainted';
+								battle.fainted.push(battle.active.position);
+								party[battle.active.position] = active;
+								turnSummary.push(`${activeName} fainted!`);
+
+								if (party.length !== battle.fainted.length) {
+									// switch menu
+								}
+							}
+							else {
+								opponent.status = 'Fainted';
+								battle.opponentFainted.push(battle.opponentActive.position);
+								oppParty[battle.opponentActive.position] = opponent;
+								turnSummary.push(`${foesName} fainted!`);
+								turnSummary.push('-------------------------');
+
+								// Award Exp to each party Pokemon
+								party[battle.active.position] = active;
+								for (let j = 0; j < party.length; j++) {
+									if (battle.fainted.indexOf(j) === -1) {
+										party[j] = awardExp(party[j], j);
+									}
+								}
+								active = party[battle.active.position];
+
+								if (oppParty.length !== battle.opponentFainted.length) {
+									battle.participated = [];
+									// Switch out opponent's pokemon
+								}
+							}
+							break;
+
+							// WIP -
+							// |-fieldend|CONDITION
+						case '-fieldend':
+
+							break;
+
+							// WIP -
+							// |-fieldstart|CONDITION
+						case '-fieldstart':
+
+							break;
+
+							// Set new HP STATUS for specified POKEMON
+							// |-heal|POKEMON|HP STATUS|
+						case '-heal':
+							tempHP = item[3].split('/')[0];
+							if (item[2].split(':')[0] === 'p1a') {
+								active.currentHP = tempHP;
+								targetName = activeName;
+							}
+							else {
+								opponent.currentHP = tempHP;
+								targetName = foesName;
+							}
+							turnSummary.push(`${targetName} had its HP resotred.`);
+							break;
+
+							// WIP - A multi-hit move hit POKEMON NUM times.
+							// |-hitcount|POKEMON|NUM
+						case '-hitcount':
+							if (item[2].split(':')[0] === 'p1a') { targetName = activeName; }
+							else { targetName = foesName; }
+							turnSummary.push(`${targetName} was hit ${item[3]} times!`);
+							break;
+
+							// POKEMON is immune to a move.
+							// |-immune|POKEMON
+						case '-immune':
+							if (item[2].split(':')[0] === 'p1a') { targetName = activeName; }
+							else { targetName = foesName.charAt(0).toLowerCase() + foesName.slice(1); }
+							turnSummary.push(`It doesn't affect ${targetName}...`);
+							break;
+
+							// WIP - Inverts the boosts of the specified POKEMON
+							// |-invertboost|POKEMON
+						case '-invertboost':
+							break;
+
+							// WIP - ITEM held by POKEMON has been changed or revealed due to
+							// EFFECT (move or ability)
+							// |-item|POKEMON|ITEM|[from]EFFECT
+							// POKEMON switched in, ITEM has long-term effect (Ex: Air Balloon)
+							// |-item|POKEMON|ITEM|
+						case '-item':
+							break;
+
+							// The move used by SOURCE missed the TARGET
+							// |-miss|SOURCE|TARGET
+						case '-miss':
+							if (item[3].split(':')[0] === 'p1a') {
+								turnSummary.push(`${activeName} avoided the attack!`);
+							}
+							else {
+								turnSummary.push(`${foesName} avoided the attack!`);
+							}
+							break;
+
+							// IMPROVE LATER - fetch move description
+							// |move|POKEMON|MOVE|TARGET
+						case 'move':
+							if (item[2].split(':')[0] === 'p1a') {
+								turnSummary.push(`${activeName} used ${item[3]}!`);
+							}
+							else {
+								// turnSummary.push(`${foesName} used ${opponent.moves[oppMove - 1]}!`);
+								turnSummary.push(`${foesName} used ${item[3]}!`);
+							}
+							break;
+
+							// Future Implement - Zoroark Illusion has ended
+							// |replace|POKEMON|DETAILS|HP STATUS
+						case 'replace':
+							break;
+
+							// Resisted hit was perfomed on POKEMON
+							// |-resisted|POKEMON
+						case '-resisted':
+							turnSummary.push('It\'s not very effective!');
+							break;
+
+							// WIP - specified POKEMON's STAT is set to specific AMOUNT (Ex: Anger Point, Belly Drum)
+							// |-setboost|POKEMON|STAT|AMOUNT
+						case '-setboost':
+
+							break;
+
+							// WIP - specified POKEMON now has HP hitpoints
+							// |-sethp|POKEMON|HP
+						case '-sethp':
+
+							break;
+
+							// WIP - a side CONDITION has started on SIDE. (Ex: Tailwind, Stealth Rock, Reflect)
+							// |-sidestart|SIDE|CONDITION|
+						case '-sidestart':
+							break;
+
+							// WIP - a side CONDITION has ended on SIDE.
+							// |-sidestart|SIDE|CONDITION|
+						case '-sideend':
+							break;
+
+							// WIP - specified POKEMON used a MOVE lasting duration of the move (Ex: Grudge, Destiny Bond)
+							// |-singlemove|POKEMON|MOVE
+						case '-singlemove':
+
+							break;
+
+							// WIP - specified POKEMON used a MOVE lasting duration of the turn (Ex: Protect, Focus Punch, Roost)
+							// |-singleturn|POKEMON|MOVE
+						case '-singleturn':
+
+							break;
+
+							// WIP - a [*volatile* status] has been inflicted on POKEMON by EFFECT.
+							// |-start|POKEMON|EFFECT
+						case '-start':
+							break;
+
+							// WIP - specified POKEMON has been inflcited with STATUS
+							// |-status|POKEMON|STATUS
+						case '-status':
+							if (item[2].split(':')[0] === 'p1a') {
+								targetName = `${activeName}`;
+								tempPoke = active;
+							}
+							else {
+								targetName = `${foesName}`;
+								tempPoke = opponent;
+							}
+
+							switch (item[3]) {
+
+							case 'par':
+								turnSummary.push(`${targetName} was paralyzed!`);
+								tempPoke.status = ' [PRZ]';
+								break;
+							case 'psn':
+								turnSummary.push(`${targetName} was poisoned!`);
+								tempPoke.status = ' [PSN]';
+								break;
+							case 'slp':
+								turnSummary.push(`${targetName} fell asleep!`);
+								tempPoke.status = ' [SLP]';
+								break;
+							case 'tox':
+								turnSummary.push(`${targetName} was badly poisoned!`);
+								tempPoke.status = ' [PSN]';
+								break;
+							default:
+								turnSummary.push(`${targetName} was afflicted with an undefined status!`);
+							}
+
+							if (item[2].split(':')[0] === 'p1a') { active = tempPoke; }
+							else { opponent = tempPoke; }
+							break;
+
+							// super-effective hit was perfomed on POKEMON
+							// |-supereffective|POKEMON
+						case '-supereffective':
+							turnSummary.push('It\'s super effective!');
+							break;
+
+							// Future Implement: Double Battles
+							// |swap|POKEMON|POSITION
+						case 'swap':
+							break;
+
+							// WIP - Swaps the boosts from STATS between the SOURCE and TARGET Pokemon
+							// |-swapboost|SOURCE|TARGET|STATS
+						case '-swapboost':
+
+							break;
+
+							// WIP - Player + opponent black out, no money lost, all mon healed and statuses set to normal, formes reset.
+							// |tie
+						case 'tie':
+							battleDone = true;
+							winnerDetermined = true;
+
+							// Return player to last visited Pokémon Center/home
+							if (profile.lastHealLocation === 'leddintown') {
+								healLocationPhrase = 'home';
+							}
+							else {
+								newLocation = await Location.findOne({ _id: profile.lastHealLocation });
+								healLocationPhrase = `to the ${newLocation.name} Pokémon Center`;
+							}
+							profile.currentLocation = profile.lastHealLocation;
+							turnSummary.push(`You have no more Pokémon that can fight!\n
+										You were discouraged by the tie!\n
+										You scurry back ${healLocationPhrase}, protecting your exhausted Pokémon from any futher harm...`);
+
+							// Set HP, status, formes to normal
+							console.log('Promise resolve after tie');
+							resolve();
+							break;
+
+							// Sync battle object turn count with simulator turn count.
+							// |turn|AMOUNT
+						case 'turn':
+							if (item[2] !== battle.turn) battle.turn = item[2];
+							if (parseInt(item[2], 10) > 1) {
+								console.log('Promise resolved on turn: ' + item[2]);
+								resolve();
+							}
+							break;
+
+							// POKEMON's STAT is unboosted by AMOUNT levels, to a max of -6
+							// |-unboost|POKEMON|STAT|AMOUNT
+						case '-unboost':
+							switch (item[3]) {
+							case 'atk':
+								stat = 'Attack';
+								break;
+							case 'def':
+								stat = 'Defense';
+								break;
+							case 'spa':
+								stat = 'Sp. Atk';
+								break;
+							case 'spd':
+								stat = 'Sp. Def';
+								break;
+							case 'spe':
+								stat = 'Speed';
+								break;
+							case 'accuracy':
+								stat = 'accuracy';
+								break;
+							case 'evasion':
+								stat = 'evasiveness';
+							}
+
+							if (item[2].split(':')[0] === 'p1a') {
+								if (battle.active.boosts[item[3]] > -6) {
+									targetName = activeName;
+									switch (item[4]) {
+									case '1':
+										battle.active.boosts[item[3]] -= 1;
+										turnSummary.push(`${targetName}'s ${stat} fell! [${battle.active.boosts[item[3]]}]`);
+										break;
+									case '2':
+										battle.active.boosts[item[3]] -= 2;
+										if (battle.active.boosts[item[3]] < -6) battle.active.boosts[item[3]] = -6;
+										turnSummary.push(`${targetName}'s ${stat} harshly fell! [${battle.active.boosts[item[3]]}]`);
+										break;
+									case '3':
+									case '4':
+									case '5':
+									case '6':
+										battle.active.boosts[item[3]] -= parseInt(item[4], 10);
+										if (battle.active.boosts[item[3]] < -6) battle.active.boosts[item[3]] = -6;
+										turnSummary.push(`${targetName}'s ${stat} severely fell! [${battle.active.boosts[item[3]]}]`);
+										break;
+									}
+								}
+								else {
+									turnSummary.push(`${targetName}'s ${stat} won't go any lower!`);
+								}
+							}
+							else {
+								targetName = foesName;
+								if (battle.opponentActive.boosts[item[3]] > -6) {
+									switch (item[4]) {
+									case '1':
+										battle.opponentActive.boosts[item[3]] -= 1;
+										turnSummary.push(`${targetName}'s ${stat} fell! [${battle.opponentActive.boosts[item[3]]}]`);
+										break;
+									case '2':
+										battle.oppopnentActive.boosts[item[3]] -= 2;
+										if (battle.opponentActive.boosts[item[3]] < -6) battle.opponentActive.boosts[item[3]] = -6;
+										turnSummary.push(`${targetName}'s ${stat} harshly fell! [${battle.opponentActive.boosts[item[3]]}]`);
+										break;
+									case '3':
+									case '4':
+									case '5':
+									case '6':
+										battle.opponentActive.boosts[item[3]] -= parseInt(item[4], 10);
+										if (battle.opponentActive.boosts[item[3]] < -6) battle.opponentActive.boosts[item[3]] = -6;
+										turnSummary.push(`${targetName}'s ${stat} severely fell! [${battle.opponentActive.boosts[item[3]]}]`);
+										break;
+									}
+								}
+								else {
+									turnSummary.push(`${targetName}'s ${stat} won't go any lower!`);
+								}
+							}
+							break;
+
+							// WIP - Indicates WEATHER that is currently in effect. [upkeep] if weather was activated previously and still in effect, 'none' if weather expired.
+							// |-weather|WEATHER
+						case 'weather':
+
+							break;
+
+							// WIP - If player, apply experience, level ups, win money (if trainer), evolutions. If opponent, black out, take money from player.
+							// |win|USER
+						case 'win':
+
+							if (item[2] === 'Player') {
+
+								// If trainer, determine amount of prize money won and post to TurnSummary
+								// Increase happiness if
+								if (battle.opponent.type !== 'Wild') {
+
+									switch (battle.opponent.level) {
+									case 'beginner':
+										prizeMoneyBase = 60;
+										break;
+
+									case 'novice':
+										prizeMoneyBase = 80;
+										break;
+
+									case 'intermediate':
+										prizeMoneyBase = 100;
+										break;
+
+									case 'advanced':
+										prizeMoneyBase = 120;
+										break;
+
+									case 'expert':
+										prizeMoneyBase = 160;
+										break;
+
+									case 'special':
+										prizeMoneyBase = 200;
+										if (battle.opponent.trainerType === 'Leader' || battle.opponent.trainerType === 'Elite Four' || battle.opponent.trainerType === 'Champion') {
+											for (const position of battle.participated) {
+												if (party[position].happiness < 100) {
+													party[position].happiness += 5;
+												}
+												else if (party[position].happiness < 200) {
+													party[position].happiness += 4;
+												}
+												else if (party[position].happiness < 253) {
+													party[position].happiness += 3;
+												}
+												else if (party[position].happiness < 255) {
+													party[position].happiness = 255;
+												}
+											}
+										}
+										break;
+									}
+									for (const pokemon of oppParty) {
+										if (pokemon.level > maxLevel) maxLevel = pokemon.level;
+									}
+									prizeMoney = maxLevel * prizeMoneyBase;
+									profile.money += prizeMoney;
+
+									turnSummary.push(`You defeated !\nYou got ${prizeMoney}P for winning!`);
+								}
+
+								if (battle.evolutions) {
+									// WIP - queue evolutions
+								}
+
+								battleDone = true;
+								winnerDetermined = true;
+								winner = true;
+							}
+							else {
+
+								// determine amount of prize money lost
+								switch (profile.badges.length) {
+								case 0:
+									prizeMoneyBase = 8;
+									break;
+
+								case 1:
+									prizeMoneyBase = 16;
+									break;
+
+								case 2:
+									prizeMoneyBase = 24;
+									break;
+
+								case 3:
+									prizeMoneyBase = 36;
+									break;
+
+								case 4:
+									prizeMoneyBase = 48;
+									break;
+
+								case 5:
+									prizeMoneyBase = 64;
+									break;
+
+								case 6:
+									prizeMoneyBase = 80;
+									break;
+
+								case 7:
+									prizeMoneyBase = 100;
+									break;
+
+								case 8:
+									prizeMoneyBase = 120;
+									break;
+
+								default:
+									prizeMoneyBase = 8;
+								}
+								for (const pokemon of party) {
+									if (pokemon.level > maxLevel) maxLevel = pokemon.level;
+								}
+								prizeMoney = maxLevel * prizeMoneyBase;
+								if (prizeMoney > profile.money) prizeMoney = profile.money;
+
+								// set new location as last location healed after loss.
+								if (profile.lastHealLocation === 'leddintown') {
+									newLocation = await Location.findOne({ _id: 'leddintown' });
+									healLocationPhrase = 'home';
+								}
+								else {
+									newLocation = await Location.findOne({ _id: profile.lastHealLocation });
+									healLocationPhrase = `to the ${newLocation.name} Pokémon Center`;
+								}
+								profile.currentLocation = newLocation._id;
+								console.log('Player lost. New Location set.');
+								console.log('TurnSummary: \n' + turnSummary);
+								turnSummary.push(`\nYou have no more Pokémon that can fight!
+											You panicked and dropped ${prizeMoney}P...
+											You were overwhelmed by your defeat!
+											You scurry back ${healLocationPhrase}, protecting your exhausted Pokémon from any futher harm...`);
+								console.log('TurnSummary Update: \n' + turnSummary);
+
+								// WIP - fully heal team, update location to last PC
+								profile.money -= prizeMoney;
+
+								battleDone = true;
+								winnerDetermined = true;
+							}
+							console.log('Promise resolved after winner determined.');
+							resolve();
+							break;
+
+						default:
+							break;
 						}
-						for (const pokemon of oppParty) {
-							if (pokemon.level > maxLevel) maxLevel = pokemon.level;
-						}
-						prizeMoney = maxLevel * prizeMoneyBase;
-						profile.money += prizeMoney;
-
-						turnSummary.push(`You defeated !\n
-                            You got ${prizeMoney}P for winning!`);
+						prevLine = line;
 					}
-
-
-					if (battle.evolutions) {
-						// WIP - queue evolutions
-					}
+					i++;
 				}
-				else {
-					battleDone = true;
-					winnerDetermined = true;
+				console.log('Promise resolved after tie');
+				resolve();
+			})();
 
-					// determine amount of prize money lost
-					switch (profile.badges.length) {
-					case 0:
-						prizeMoneyBase = 8;
-						break;
-
-					case 1:
-						prizeMoneyBase = 16;
-						break;
-
-					case 2:
-						prizeMoneyBase = 24;
-						break;
-
-					case 3:
-						prizeMoneyBase = 36;
-						break;
-
-					case 4:
-						prizeMoneyBase = 48;
-						break;
-
-					case 5:
-						prizeMoneyBase = 64;
-						break;
-
-					case 6:
-						prizeMoneyBase = 80;
-						break;
-
-					case 7:
-						prizeMoneyBase = 100;
-						break;
-
-					case 8:
-						prizeMoneyBase = 120;
-						break;
-
-					default:
-						prizeMoneyBase = 8;
-					}
-					for (const pokemon of party) {
-						if (pokemon.level > maxLevel) maxLevel = pokemon.level;
-					}
-					prizeMoney = maxLevel * prizeMoneyBase;
-					if (prizeMoney > profile.money) prizeMoney = profile.money;
-
-					// set new location as last location healed after loss.
-					if (profile.lastHealLocation === 'leddintown') {
-						newLocation = await Location.findOne({ _id: 'leddintown' });
-						healLocationPhrase = 'home';
-					}
-					else {
-						newLocation = await Location.findOne({ _id: profile.lastHealLocation });
-						healLocationPhrase = `to the ${newLocation.name} Pokémon Center`;
-					}
-					profile.currentLocation = newLocation._id;
-					turnSummary.push(`\nYou have no more Pokémon that can fight!
-                            You panicked and dropped ${prizeMoney}P...
-                            You were overwhelmed by your defeat!
-                            You scurry back ${healLocationPhrase}, protecting your exhausted Pokémon from any futher harm...`);
-
-					// WIP - fully heal team, remove money, update location to last PC
-
-					profile.money -= prizeMoney;
-				}
-				break;
-
-			default:
-				break;
-			}
-			prevLine = line;
-		}
-
-		return;
+			streams.omniscient.write(`>p1 move ${activeMove}`);
+			// stream.write(`>p2 move ${oppMove}`);
+		});
 	}
 
 	function awardExp(pokemon, position) {

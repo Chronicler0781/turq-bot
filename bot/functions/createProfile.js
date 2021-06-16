@@ -1,16 +1,17 @@
 const { User, Pokemon } = require('../../models');
 const genPokemon = require('./genPokemon');
 const profileQs = require('../lib/newProfileQuestions.json');
+const utils = require('../lib/utils');
 
 module.exports = async function createProfile(Discord, bot, user, trainerRole, reaction) {
-	try {
-		const emojiName = reaction.emoji.name;
-		console.log(emojiName);
-		const member = await reaction.message.guild.members.fetch(user.id);
-		console.log(member);
-		let reactionValues = null;
-		let userReactedAlready = null;
+	const emojiName = reaction.emoji.name;
+	console.log(emojiName);
+	const member = await reaction.message.guild.members.fetch(user.id);
+	console.log(member);
+	let reactionValues = null;
+	let userReactedAlready = null;
 
+	try {
 		if (member) {
 			console.log('Role and Member Found');
 
@@ -44,7 +45,6 @@ module.exports = async function createProfile(Discord, bot, user, trainerRole, r
 					if (!memberTrainer) {
 						await member.roles.add(trainerRole);
 						console.log('New profile about to be created');
-						bot.commands.get('new').execute(Discord, bot, member, emojiName, trainerRole, reaction);
 
 						const userID = member.id;
 						console.log(userID);
@@ -217,6 +217,7 @@ module.exports = async function createProfile(Discord, bot, user, trainerRole, r
 									mapStatus: 'closed',
 									services: [],
 									party: [starter],
+									boxes: utils.initiateNewBox([]),
 									rival: {
 										firstName: answerList[6],
 										lastName: answerList[7],
@@ -271,5 +272,9 @@ module.exports = async function createProfile(Discord, bot, user, trainerRole, r
 	}
 	catch (e) {
 		console.error(e);
+		await member.roles.remove(trainerRole);
+		reaction.users.remove(member.id);
+		member.send('An error was encountered during profile creation. Please try again later!');
+
 	}
 };

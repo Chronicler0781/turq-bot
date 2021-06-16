@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 module.exports = new Schema({
-	pokemon: {
-		type: String, // pokemon's lowercase name
-		ref: 'DexEntry',
-	},
+	pokemon: String,
 	species: String,
 	nickname: String,
 	level: Number,
@@ -13,10 +10,7 @@ module.exports = new Schema({
 	currentHP: Number,
 	status: String,
 	abilityNo: Schema.Types.Mixed,
-	ability: {
-		type: String,
-		ref: 'Ability',
-	},
+	ability: String,
 	nature: String,
 	natureMultipliers: [Number],
 	heldItem: String,
@@ -24,10 +18,8 @@ module.exports = new Schema({
 		type: String,
 	},
 	originalTrainer: String,
-	moves: [{
-		type: String,
-		ref: 'Move',
-	}],
+	moves: [String],
+	setMoves: [String],
 	exp: {
 		current: Number,
 		percentage: Number,

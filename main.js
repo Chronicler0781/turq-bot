@@ -2,7 +2,7 @@
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const bot = new Discord.Client({
-	restTimeOffset: 0,
+	// restTimeOffset: 0,
 	partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
 });
 const fs = require('fs');

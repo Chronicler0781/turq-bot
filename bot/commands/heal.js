@@ -14,7 +14,7 @@ module.exports = {
 				for (const pokemonID of profile.party) {
 					const pokemon = await Pokemon.findOne({ _id: pokemonID });
 					pokemon.currentHP = pokemon.maxHP;
-					pokemon.status = 'None';
+					pokemon.status = '';
 					await Pokemon.findOneAndUpdate({ _id: pokemonID }, pokemon);
 				}
 			// try ends
