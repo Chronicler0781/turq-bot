@@ -35,7 +35,7 @@
         "field" : "name"
 	},
     {
-        "question": "What is your rival character's name? [Enter 'None' if not applicable, Enter 'Quit' to exit profile creation]",
+        "question": "What is your rival character's last name? [Enter 'None' if not applicable, Enter 'Quit' to exit profile creation]",
         "phrase": "Your rival's last ", 
         "field" : "name"
 	},

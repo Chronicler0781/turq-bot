@@ -7,12 +7,13 @@ const bot = new Discord.Client({
 });
 const fs = require('fs');
 const runServer = require('./server');
+const createProfile = require('./bot/functions/createProfile.js');
 
 
 // mongoose / mongodb setup
 const mongoose = require('mongoose');
 const conf = require('./config.json');
-mongoose.connect(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
@@ -21,11 +22,11 @@ db.once('open', function() {
 
 // create commands collection so that command files can be referenced from command folder
 bot.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./bot/commands/').filter(file => file.endsWith('.js'));
 
 // add command files to collection for execution
 for(const file of commandFiles) {
-	const command = require(`./commands/${file}`);
+	const command = require(`./bot/commands/${file}`);
 	bot.commands.set(command.name, command);
 }
 
@@ -35,10 +36,10 @@ bot.once('ready', () =>{
 });
 
 // Set messageID for sign-up channel, and ID for trainer role to add
-const messageNumber = conf.signupMessageID;
+const signUpMessageID = conf.signupMessageID;
 const trainerRole = conf.trainerRoleID;
 
-// watch for messages that start with the config file prefix or were posted by the bot
+// handle messages that the bot sees/receives on the server
 bot.on('message', message =>{
 	if(!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -47,118 +48,48 @@ bot.on('message', message =>{
 	const command = args.shift().toLowerCase();
 
 	switch(command) {
-
 	case 'dex':
 		bot.commands.get('dex').execute(message, args);
 		break;
-
 	// temporary command used to heal party until a menu with pokemon center access is added
 	case 'heal':
 		bot.commands.get('heal').execute(message);
 		break;
-
 	case 'help':
 		bot.commands.get('help').execute(message, args);
 		break;
-
 	case 'map':
 		bot.commands.get('map').execute(Discord, message, args, fs);
 		break;
-
 	// temporary command used to force exit a wild battle if a battle errors out while debugging
 	case 'run':
 		bot.commands.get('run').execute(message);
 		break;
-
 	// typically only used once to create signup channel messages
 	case 'signup':
-		if (!messageNumber) bot.commands.get('signup').execute(message, args);
-		else message.channel.send(`>>> Error: A signup channel has already been registered for this server. Please check the github ReadMe for information on this.`);
+		if (!signUpMessageID) bot.commands.get('signup').execute(message, args);
+		else message.channel.send('>>> Error: A signup channel has already been registered for this server. Please check the github ReadMe for information on this.');
 		break;
-
 	case 'wild':
 		bot.commands.get('wild').execute(Discord, bot, message);
 		break;
-
-	// if no command found, return message
 	default:
 		message.channel.send(`>>> Error: The command, ${command}, is not recognized. Please check your spelling or enter '${prefix}help' for a full list of commands.`);
 		console.log('Command not found');
 		break;
 	}
-
 });
 
-// Watch for reactions to sign-up channel
+// handle reactions that the bot sees/receives on the server
 bot.on('messageReactionAdd', async (reaction, user) => {
-
-	// function for starting profile creation if user reacts
-	const createProfile = async () => {
-		const emojiName = reaction.emoji.name;
-		console.log(emojiName);
-		const member = await reaction.message.guild.members.fetch(user.id);
-		console.log(member);
-		let reactionValues = null;
-		let userReactedAlready = null;
-
-		if (member) {
-			console.log('Role and Member Found');
-
-			// Create array with starters not chosen and boolean for a starter react having been chosen
-			const starters = ['acafia', 'crocoal', 'spraylet'];
-			const emojiStarter = starters.includes(emojiName);
-			const starterIndex = starters.indexOf(emojiName);
-			if (starterIndex > -1) {
-				starters.splice(starterIndex, 1);
-			}
-			console.log(starters);
-
-			// Find reactions of message, get user if anotther starter has already been reacted to
-			reactionValues = Array.from(reaction.message.reactions.cache.values());
-			for (let i = 0; i < reactionValues.length; i++) {
-				if (reactionValues[i]._emoji.name === starters[0] || reactionValues[i]._emoji.name == starters[1]) {
-					userReactedAlready = reactionValues[i].users.cache.find(mem => mem.id == user.id);
-					if (userReactedAlready) {
-						break;
-					}
-				}
-			}
-
-			// Find roles of user, get user if trainer role is already given
-			const memberTrainer = member.roles.cache.find(r => r.id === trainerRole);
-			console.log(memberTrainer);
-
-			// Continue, otherwise send error messages if starter react not chosen, user has already reacted to another starter, or is already a trainer.
-			if (emojiStarter === true) {
-				if (!userReactedAlready) {
-					if (!memberTrainer) {
-						await member.roles.add(trainerRole);
-						console.log('New profile about to be created');
-						bot.commands.get('new').execute(Discord, bot, member, emojiName, trainerRole, reaction);
-					}
-					else {
-						member.send('You are already a Trainer. If you do not have a profile created yet, please finish or quit the profile creation that you\'ve already started.');
-						reaction.users.remove(user.id);
-					}
-				}
-				else {
-					member.send('You have already reacted to another starter. If you do not have a profile created yet and would like to swich starters, please quit your current profile creation and remove the react of the previous starter you chose.');
-					reaction.users.remove(user.id);
-				}
-			}
-			else {
-				member.send('Please only react to the sign-up channel with a starter emoji.');
-				reaction.remove();
-			}
-		}
-	};
 
 	if (reaction.message.partial) {
 		try {
 			const msg = await reaction.message.fetch();
-			if (msg.id === messageNumber) {
+
+			if (msg.id === signUpMessageID) {
 				console.log('Cached');
-				createProfile();
+				await createProfile(Discord, bot, user, trainerRole, reaction);
 			}
 		}
 		catch (err) {
@@ -167,9 +98,9 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 	}
 	else {
 		try {
-			if (reaction.message.id === messageNumber) {
+			if (reaction.message.id === signUpMessageID) {
 				console.log('Not a Partial');
-				createProfile();
+				await createProfile(Discord, bot, user, trainerRole, reaction);
 			}
 		}
 		catch (err) {

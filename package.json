@@ -20,5 +20,8 @@
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.25",
     "toid": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.28.0"
   }
 }

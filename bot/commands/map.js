@@ -1,4 +1,4 @@
-const { User, Location } = require('../models');
+const { User, Location } = require('../../models');
 
 module.exports = {
 	name: 'map',
@@ -8,8 +8,8 @@ module.exports = {
 
 		// add requirements for map command
 		const { createCanvas, Image } = require('canvas');
-		const emojiCharacters = require('../scripts/emojiCharacters');
-		const travelCheck = require('./functions/travelCheck');
+		const emojiCharacters = require('../lib/emojiCharacters');
+		const travelCheck = require('../functions/travelCheck');
 
 		// Main function for map command
 		async function main() {
@@ -17,13 +17,14 @@ module.exports = {
 			try {
 				// retrieve user profile from database
 				const userID = message.author.id;
-				const access = {locID: [], locName: [], emoji: [], embedMsg: [], errorMsg: [], canAccess: []};
+				const access = { locID: [], locName: [], emoji: [], embedMsg: [], errorMsg: [], canAccess: [] };
 
 				let profile = await User.findOne({ _id: userID });
-				let ferryCost = null;
-				let location = null;
-				let valid = false;
-				let count = 0;
+				let travelStatus = null,
+					ferryCost = null,
+					location = null,
+					valid = false,
+					count = 0;
 
 				if (!profile.battleID && profile.mapStatus === 'closed') {
 
@@ -34,10 +35,9 @@ module.exports = {
 						if (!args.length) {
 							const locID = profile.currentLocation;
 							location = await Location.findOne({ _id: locID })
-        						.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs'});
+								.populate({ path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs' });
 
 							if (location) {
-							
 								valid = true;
 
 								// For each location entry in the accessTo array of the original location
@@ -46,9 +46,9 @@ module.exports = {
 
 									access.locID[count] = loc._id;
 									access.locName[count] = loc.name;
-									access.emoji[count] = emojiCharacters[count+1]
-									access.embedMsg[count] = emojiCharacters[count+1] + ' ' + loc.name;
-									
+									access.emoji[count] = emojiCharacters[count + 1];
+									access.embedMsg[count] = emojiCharacters[count + 1] + ' ' + loc.name;
+
 									if (travelStatus.canTravelTo) {
 										access.canAccess[count] = true;
 										access.errorMsg[count] = '';
@@ -122,11 +122,11 @@ module.exports = {
 							}
 
 							// find location from argument
-							location = await Location.findOne({locNames: args[0], areaName: tempArea })
-								.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs'});
+							location = await Location.findOne({ locNames: args[0], areaName: tempArea })
+								.populate({ path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs' });
 							if (!location) {
-								location = await Location.findOne({_id: args[0]})
-									.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs'});
+								location = await Location.findOne({ _id: args[0] })
+									.populate({ path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs' });
 							}
 
 							if (location) {
@@ -136,7 +136,7 @@ module.exports = {
 								// Add ferry to travel options if appplicable
 								if (location.ferry[0]) {
 									for (const loc of location.ferry) {
-										
+
 										if (loc.id === profile.currentLocation && profile.money >= loc.cost) {
 											ferryCost = loc.cost;
 											access.locID.push(location._id);
@@ -181,7 +181,7 @@ module.exports = {
 									access.locName.push(location.name);
 									access.emoji.push(emojiCharacters.a);
 									access.embedMsg.push(emojiCharacters.a + ' ' + 'Altaria Airways 🔒');
-									access.canAccess.push(false)
+									access.canAccess.push(false);
 									access.errorMsg.push(travelStatus.reason);
 								}
 								else if (location.usableHMs.indexOf('fly') !== -1) {
@@ -189,8 +189,10 @@ module.exports = {
 									access.locName.push(location.name);
 									access.emoji.push(emojiCharacters.a);
 									access.embedMsg.push(emojiCharacters.a + ' ' + 'Altaria Airways 🔒');
-									access.canAccess.push(false)
-									access.errorMsg.push(travelStatus.reason+`Error: You haven't unlocked that service yet. Please visit Szlazan City after obtaining 4 badges, and complete the 'All Aboard Altaria Airways' sidequest.`);
+									access.canAccess.push(false);
+									access.errorMsg.push(travelStatus.reason + 'Error: You haven\'t unlocked that service yet. ' +
+										'Please visit Szlazan City after obtaining 4 badges, and complete the \'All Aboard Altaria ' +
+										'Airways\' sidequest.');
 								}
 								else {
 									access.embedMsg.push('None');
@@ -200,8 +202,8 @@ module.exports = {
 
 						// if 2 arguments, get location / area specified and populate access object with option information
 						else if (args.length == 2) {
-							location = await Location.findOne({ locNames: args[0], areaName: args[1]})
-								.populate({path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs'});	
+							location = await Location.findOne({ locNames: args[0], areaName: args[1] })
+								.populate({ path: 'accessedBy', select: '_id name locNames areaName island usableHMs numRequiredBadges numRequiredRevJobs' });
 
 							if (location) {
 
@@ -222,7 +224,7 @@ module.exports = {
 									access.locName.push(location.name);
 									access.emoji.push(emojiCharacters.a);
 									access.embedMsg.push(emojiCharacters.a + ' ' + 'Altaria Airways 🔒');
-									access.canAccess.push(false)
+									access.canAccess.push(false);
 									access.errorMsg.push(travelStatus.reason);
 								}
 								else if (location.usableHMs.indexOf('fly') !== -1) {
@@ -230,8 +232,8 @@ module.exports = {
 									access.locName.push(location.name);
 									access.emoji.push(emojiCharacters.a);
 									access.embedMsg.push(emojiCharacters.a + ' ' + 'Altaria Airways 🔒');
-									access.canAccess.push(false)
-									access.errorMsg.push(travelStatus.reason+``);
+									access.canAccess.push(false);
+									access.errorMsg.push(travelStatus.reason + '');
 								}
 								else {
 									access.embedMsg.push('None');
@@ -257,7 +259,8 @@ module.exports = {
 							let img2 = null;
 							if (location.locNames[0]) {
 								img2 = await loadImage(`./images/map/${location.locNames[0]}.png`, merge);
-							} else {
+							}
+							else {
 								img2 = await loadImage(`./images/map/${location._id}.png`, merge);
 							}
 
@@ -298,129 +301,126 @@ module.exports = {
 								.setFooter('React with ❎ to close your map.');
 
 							await message.channel.send(mapEmbed)
-							.then(embed => {
-								for (const emoji of access.emoji) {
-									embed.react(emoji);
-								}
-								const filter = ( reaction, user) => {
-									return access.emoji.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
-								}
-								return { embed, filter }
-							})
-							.then(async ({ embed, filter }) => {
-								if (access.emoji.length > 0) {
-									embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
-									.then(async collected => {
-										for (let i = 0; i < access.emoji.length; i++) {
-											
-											// Handle reactions for nearby locations
-											if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] !== emojiCharacters.a && access.emoji[i] !== emojiCharacters.f && access.emoji[i] !== '❎') {
-												if (access.canAccess[i]) {
-													let updatedProfile = {
-														currentLocation: access.locID[i],
-														visited: profile.visited,
-														mapStatus: 'closed'
-													}
-													if (updatedProfile.visited.indexOf(access.locID[i]) === -1) {
-														updatedProfile.visited.push(access.locID[i]);
-													}
-													profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, { new: true});
-													message.channel.send(`>>> You have successfully traveled to ${access.locName[i]}.`);
-													console.log('New player location set as ' + profile.currentLocation);
-													break;
-												}
-												else {
-													message.channel.send(access.errorMsg[i]);
-													await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
-													break;
-												}
-											}
+								.then(embed => {
+									for (const emoji of access.emoji) {
+										embed.react(emoji);
+									}
+									const filter = (reaction, user) => {
+										return access.emoji.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
+									};
+									return { embed, filter };
+								})
+								.then(async ({ embed, filter }) => {
+									if (access.emoji.length > 0) {
+										embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+											.then(async collected => {
+												for (let i = 0; i < access.emoji.length; i++) {
 
-											// Handle reaction for flying
-											else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === emojiCharacters.a) {
-												if (profile.currentLocation === access.locID[i]) {
-													if (access.canAccess[i]) {
-														await openFlyMenu(profile, location);
-														break;
-													}
-													else {
-														message.channel.send(`>>> Error: You haven't unlocked that service yet. Please visit Szlazan City after obtaining 4 badges, and complete the 'All Aboard Altaria Airways'  sidequest.`);
-														await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
-														break;
-													}
-												}
-												else {
-													if (profile.visited.indexOf(access.locID[i]) !== -1 && access.canAccess[i]) {
-														let updatedProfile = {
-															currentLocation: access.locID[i],
-															mapStatus: 'closed'
+													// Handle reactions for nearby locations
+													if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] !== emojiCharacters.a && access.emoji[i] !== emojiCharacters.f && access.emoji[i] !== '❎') {
+														if (access.canAccess[i]) {
+															const updatedProfile = {
+																currentLocation: access.locID[i],
+																visited: profile.visited,
+																mapStatus: 'closed',
+															};
+															if (updatedProfile.visited.indexOf(access.locID[i]) === -1) {
+																updatedProfile.visited.push(access.locID[i]);
+															}
+															profile = await User.findOneAndUpdate({ _id: userID }, updatedProfile, { new: true });
+															message.channel.send(`>>> You have successfully traveled to ${access.locName[i]}.`);
+															console.log('New player location set as ' + profile.currentLocation);
+															break;
 														}
-														profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, { new: true});
-														message.channel.send(`>>> You have arrived at your destination: ${access.locName[i]}. Thank you for flying with Altaria Airways!`);
-														console.log('New player location set as ' + profile.currentLocation);
-														break;
+														else {
+															message.channel.send(access.errorMsg[i]);
+															await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
+															break;
+														}
 													}
-													else if (access.canAccess[i]) {
-														message.channel.send(`${access.errorMsg[i]}Error: Altaria Airways cannot navigate you to a location you haven't visited before.`);
-														await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
-														break;
-													}
-													else {
-														message.channel.send(access.errorMsg[i]);
-														await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
-														break;
-													}
-												}
-											}
 
-											// Handle reaction for ferry 
-											else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === emojiCharacters.f) {
-												if (profile.currentLocation === access.locID[i]) {
-													await openFerryMenu(profile, location);
-													break;
-												}
-												else {
-													if (access.canAccess[i]) {
-														let updatedProfile = {
-															currentLocation: access.locID[i],
-															money: profile.money - ferryCost,
-															visited: profile.visited,
-															mapStatus: 'closed'
+													// Handle reaction for flying
+													else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === emojiCharacters.a) {
+														if (profile.currentLocation === access.locID[i]) {
+															if (access.canAccess[i]) {
+																await openFlyMenu(profile, location);
+																break;
+															}
+															else {
+																message.channel.send('>>> Error: You haven\'t unlocked that service yet. Please visit ' +
+																	'Szlazan City after obtaining 4 badges, and complete the \'All Aboard Altaria Airways\'  sidequest.');
+																await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
+																break;
+															}
 														}
-														if (updatedProfile.visited.indexOf(access.locID[i]) === -1) {
-															updatedProfile.visited.push(access.locID[i]);
+														else if (profile.visited.indexOf(access.locID[i]) !== -1 && access.canAccess[i]) {
+															const updatedProfile = {
+																currentLocation: access.locID[i],
+																mapStatus: 'closed',
+															};
+															profile = await User.findOneAndUpdate({ _id: userID }, updatedProfile, { new: true });
+															message.channel.send(`>>> You have arrived at your destination: ${access.locName[i]}. Thank you for flying with Altaria Airways!`);
+															console.log('New player location set as ' + profile.currentLocation);
+															break;
 														}
-														profile = await User.findOneAndUpdate({_id: userID}, updatedProfile, { new: true});
-														message.channel.send(`>>> The Neptune Ferry has brought you to ${access.locName[i]}. You pay the fee of ${ferryCost}P.`);
-														console.log('New player location set as ' + profile.currentLocation);
-														break;
+														else if (access.canAccess[i]) {
+															message.channel.send(`${access.errorMsg[i]}Error: Altaria Airways cannot navigate you to a location you haven't visited before.`);
+															await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
+															break;
+														}
+														else {
+															message.channel.send(access.errorMsg[i]);
+															await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
+															break;
+														}
 													}
-													else {
-														message.channel.send(access.errorMsg[i]);
+
+													// Handle reaction for ferry
+													else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === emojiCharacters.f) {
+														if (profile.currentLocation === access.locID[i]) {
+															await openFerryMenu(profile, location);
+															break;
+														}
+														else if (access.canAccess[i]) {
+															const updatedProfile = {
+																currentLocation: access.locID[i],
+																money: profile.money - ferryCost,
+																visited: profile.visited,
+																mapStatus: 'closed',
+															};
+															if (updatedProfile.visited.indexOf(access.locID[i]) === -1) {
+																updatedProfile.visited.push(access.locID[i]);
+															}
+															profile = await User.findOneAndUpdate({ _id: userID }, updatedProfile, { new: true });
+															message.channel.send(`>>> The Neptune Ferry has brought you to ${access.locName[i]}. You pay the fee of ${ferryCost}P.`);
+															console.log('New player location set as ' + profile.currentLocation);
+															break;
+														}
+														else {
+															message.channel.send(access.errorMsg[i]);
+															await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
+															break;
+														}
+													}
+													else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === '❎') {
+														message.channel.send('>>> Map closed.');
 														await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
 														break;
 													}
 												}
-											}
-											else if (access.emoji[i] === collected.first().emoji.name && access.emoji[i] === '❎') {
-												message.channel.send('>>> Map closed.');
-												await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
-												break;
-											}
-										}
-										return;
-									})
-									.catch((error) => {
-										console.log(error)
-										message.channel.send('>>> Error: Your command has timed out. Please start again.')
-										.then(async () => {
-											await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
-										});
-										return;
-									})
-								}
-								return;
-							})
+												return;
+											})
+											.catch((error) => {
+												console.log(error);
+												message.channel.send('>>> Error: Your command has timed out. Please start again.')
+													.then(async () => {
+														await User.findOneAndUpdate({ _id: userID }, { mapStatus: 'closed' });
+													});
+												return;
+											});
+									}
+									return;
+								});
 
 						}
 
@@ -436,13 +436,11 @@ module.exports = {
 
 				}
 				// if in a battle or map is already open, return error message
+				else if (profile.mapStatus === 'open') {
+					message.channel.send('>>> Error: Your map is already open!');
+				}
 				else {
-					if (profile.mapStatus === 'open') {
-						message.channel.send('>>> Error: Your map is already open!');
-					}
-					else {
-						message.channel.send('>>> Error: Please finish your current battle before opening up your map!');
-					}
+					message.channel.send('>>> Error: Please finish your current battle before opening up your map!');
 				}
 
 			// try ends
@@ -471,7 +469,7 @@ module.exports = {
 			const krtusoLocations = { id: [], name: [], embedMsg: [] };
 			const adarziliraLocations = { id: [], name: [], embedMsg: [] };
 			const locationEmojis1 = ['▶️'];
-			const locationEmojis2 = ['◀️','▶️'];
+			const locationEmojis2 = ['◀️', '▶️'];
 			const locationEmojis3 = ['◀️'];
 			const lists = getListArrays();
 
@@ -483,80 +481,80 @@ module.exports = {
 			// Sort visited locations into island objects with relevant information for postable embed w/reactions
 			for (const loc of lists.locations) {
 				if (profile.visited.indexOf(loc) !== -1 && loc !== profile.currentLocation) {
-					const tempLoc = await Location.findOne({_id: loc});
+					const tempLoc = await Location.findOne({ _id: loc });
 					if (tempLoc.usableHMs.indexOf('fly') !== -1) {
 						switch (tempLoc.island) {
-							case 'Brol Island':
+						case 'Brol Island':
+							locationEmojis1.push(lists.emojis[count1]);
+							brolLocations.id.push(tempLoc._id);
+							brolLocations.name.push(tempLoc.name);
+							brolLocations.embedMsg.push(`${lists.emojis[count1]} ${tempLoc.name}`);
+							count1++;
+							break;
+
+						case 'Kronea Island':
+							locationEmojis1.push(lists.emojis[count1]);
+							kroneaLocations.id.push(tempLoc._id);
+							kroneaLocations.name.push(tempLoc.name);
+							kroneaLocations.embedMsg.push(`${lists.emojis[count1]} ${tempLoc.name}`);
+							count1++;
+							break;
+
+						case 'Tilnen Island':
+							if (count < 20) {
 								locationEmojis1.push(lists.emojis[count1]);
-								brolLocations.id.push(tempLoc._id)
-								brolLocations.name.push(tempLoc.name);
-								brolLocations.embedMsg.push(`${lists.emojis[count1]} ${tempLoc.name}`)
+								tilnenLocations1.id.push(tempLoc._id);
+								tilnenLocations1.name.push(tempLoc.name);
+								tilnenLocations1.embedMsg.push(`${lists.emojis[count1]} ${tempLoc.name}`);
 								count1++;
-								break;
-		
-							case 'Kronea Island':
-								locationEmojis1.push(lists.emojis[count1]);
-								kroneaLocations.id.push(tempLoc._id)
-								kroneaLocations.name.push(tempLoc.name);
-								kroneaLocations.embedMsg.push(`${lists.emojis[count1]} ${tempLoc.name}`)
-								count1++;
-								break;
-		
-							case 'Tilnen Island':
-								if (count < 20) {
-									locationEmojis1.push(lists.emojis[count1]);
-									tilnenLocations1.id.push(tempLoc._id)
-									tilnenLocations1.name.push(tempLoc.name);
-									tilnenLocations1.embedMsg.push(`${lists.emojis[count1]} ${tempLoc.name}`)
-									count1++;
-								}
-								else {
-									locationEmojis2.push(lists.emojis[count2]);
-									tilnenLocations2.id.push(tempLoc._id)
-									tilnenLocations2.name.push(tempLoc.name);
-									tilnenLocations2.embedMsg.push(`${lists.emojis[count2]} ${tempLoc.name}`)
-									count2++;
-								}
-								break;
-		
-							case 'Xybryle Island':
-								if (count < 39) {
-									locationEmojis2.push(lists.emojis[count2]);
-									xybryleLocations1.id.push(tempLoc._id)
-									xybryleLocations1.name.push(tempLoc.name);
-									xybryleLocations1.embedMsg.push(`${lists.emojis[count2]} ${tempLoc.name}`)
-									count2++;
-								}
-								else {
-									locationEmojis3.push(lists.emojis[count3]);
-									xybryleLocations2.id.push(tempLoc._id)
-									xybryleLocations2.name.push(tempLoc.name);
-									xybryleLocations2.embedMsg.push(`${lists.emojis[count3]} ${tempLoc.name}`)
-									count3++;
-								}
-								break;
-		
-							case 'Krtuso Island':
+							}
+							else {
+								locationEmojis2.push(lists.emojis[count2]);
+								tilnenLocations2.id.push(tempLoc._id);
+								tilnenLocations2.name.push(tempLoc.name);
+								tilnenLocations2.embedMsg.push(`${lists.emojis[count2]} ${tempLoc.name}`);
+								count2++;
+							}
+							break;
+
+						case 'Xybryle Island':
+							if (count < 39) {
+								locationEmojis2.push(lists.emojis[count2]);
+								xybryleLocations1.id.push(tempLoc._id);
+								xybryleLocations1.name.push(tempLoc.name);
+								xybryleLocations1.embedMsg.push(`${lists.emojis[count2]} ${tempLoc.name}`);
+								count2++;
+							}
+							else {
 								locationEmojis3.push(lists.emojis[count3]);
-								krtusoLocations.id.push(tempLoc._id)
-								krtusoLocations.name.push(tempLoc.name);
-								krtusoLocations.embedMsg.push(`${lists.emojis[count3]} ${tempLoc.name}`)
+								xybryleLocations2.id.push(tempLoc._id);
+								xybryleLocations2.name.push(tempLoc.name);
+								xybryleLocations2.embedMsg.push(`${lists.emojis[count3]} ${tempLoc.name}`);
 								count3++;
-								break;
-		
-							case 'Adar Zilira':
-								locationEmojis3.push(lists.emojis[count3]);
-								adarziliraLocations.id.push(tempLoc._id)
-								adarziliraLocations.name.push(tempLoc.name);
-								adarziliraLocations.embedMsg.push(`${lists.emojis[count3]} ${tempLoc.name}`)
-								count3++;
-								break;
+							}
+							break;
+
+						case 'Krtuso Island':
+							locationEmojis3.push(lists.emojis[count3]);
+							krtusoLocations.id.push(tempLoc._id);
+							krtusoLocations.name.push(tempLoc.name);
+							krtusoLocations.embedMsg.push(`${lists.emojis[count3]} ${tempLoc.name}`);
+							count3++;
+							break;
+
+						case 'Adar Zilira':
+							locationEmojis3.push(lists.emojis[count3]);
+							adarziliraLocations.id.push(tempLoc._id);
+							adarziliraLocations.name.push(tempLoc.name);
+							adarziliraLocations.embedMsg.push(`${lists.emojis[count3]} ${tempLoc.name}`);
+							count3++;
+							break;
 						}
 					}
 				}
 				count++;
 			}
-			
+
 			if (!brolLocations.embedMsg[0]) brolLocations.embedMsg.push('None');
 			if (!kroneaLocations.embedMsg[0]) kroneaLocations.embedMsg.push('None');
 			if (!tilnenLocations1.embedMsg[0]) tilnenLocations1.embedMsg.push('None');
@@ -598,29 +596,29 @@ module.exports = {
 			let decision = false;
 			let optionSet = 1;
 			let data = null;
-			firstRun = true;
+			let firstRun = true;
 
 			while (!decision) {
 				switch (optionSet) {
-					case 1:
-						if (firstRun) loadMessage.delete();
-						data = await runFlyEmbed(flyOptionSet1Embed, locationEmojis1, brolLocations, kroneaLocations, tilnenLocations1, optionSet)
-						optionSet = data.option;
-						decision = data.decision;
-						firstRun = false;
-						break;
+				case 1:
+					if (firstRun) loadMessage.delete();
+					data = await runFlyEmbed(flyOptionSet1Embed, locationEmojis1, brolLocations, kroneaLocations, tilnenLocations1, optionSet);
+					optionSet = data.option;
+					decision = data.decision;
+					firstRun = false;
+					break;
 
-					case 2:
-						data = await runFlyEmbed(flyOptionSet2Embed, locationEmojis2, tilnenLocations2, xybryleLocations1, { id: [], name: [], embedMsg: [] }, optionSet)
-						optionSet = data.option;
-						decision = data.decision;
-						break;
-					
-					case 3:
-						data = await runFlyEmbed(flyOptionSet3Embed, locationEmojis3, xybryleLocations2, krtusoLocations, adarziliraLocations, optionSet)
-						optionSet = data.option;
-						decision = data.decision;
-						break;
+				case 2:
+					data = await runFlyEmbed(flyOptionSet2Embed, locationEmojis2, tilnenLocations2, xybryleLocations1, { id: [], name: [], embedMsg: [] }, optionSet);
+					optionSet = data.option;
+					decision = data.decision;
+					break;
+
+				case 3:
+					data = await runFlyEmbed(flyOptionSet3Embed, locationEmojis3, xybryleLocations2, krtusoLocations, adarziliraLocations, optionSet);
+					optionSet = data.option;
+					decision = data.decision;
+					break;
 				}
 			}
 		}
@@ -642,39 +640,40 @@ module.exports = {
 				emojiCharacters.n, emojiCharacters.o, emojiCharacters.p, emojiCharacters.q, emojiCharacters.r, emojiCharacters.s, emojiCharacters.t, emojiCharacters.u,
 				emojiCharacters.v, emojiCharacters.w, emojiCharacters.x, emojiCharacters.y, emojiCharacters.z];
 
-			return { locations: locationList, emojis: emojiList }
+			return { locations: locationList, emojis: emojiList };
 		}
 
 		// Function for posting emded with fly options for a set of three islands, returning new option or location choice
 		async function runFlyEmbed(flyEmbed, emojiList, island1, island2, island3, oldOption) {
-			let populateReacts = true;
+			let populateReacts = true,
+				decision = false,
+				option = null;
 
-			idList = [''].concat(island1.id.concat(island2.id.concat(island3.id)));
-			nameList = [''].concat(island1.name.concat(island2.name.concat(island3.name)));
+			const idList = [''].concat(island1.id.concat(island2.id.concat(island3.id))),
+				nameList = [''].concat(island1.name.concat(island2.name.concat(island3.name)));
 			emojiList.push('❎');
 
 			const embed = await message.channel.send(flyEmbed);
 
 			for (const emoji of emojiList) {
-				if (populateReacts)
-					embed.react(emoji);
+				if (populateReacts) { embed.react(emoji); }
 			}
 
 			try {
-				const filter = ( reaction, user) => {
+				const filter = (reaction, user) => {
 					return emojiList.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
-				}
-				const collected = await embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] });			
+				};
+				const collected = await embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] });
 				for (let i = 0; i < emojiList.length; i++) {
 					if (emojiList[i] === collected.first().emoji.name && emojiList[i] !== '▶️' && emojiList[i] !== '◀️' && emojiList[i] !== '❎') {
 						let j = null;
 						if (emojiList[1] === '▶️') j = i - 1;
 						else j = i;
-						let updatedProfile = {
+						const updatedProfile = {
 							currentLocation: idList[j],
-							mapStatus: 'closed'
-						}
-						const profile = await User.findOneAndUpdate({_id: message.author.id}, updatedProfile, { new: true});
+							mapStatus: 'closed',
+						};
+						const profile = await User.findOneAndUpdate({ _id: message.author.id }, updatedProfile, { new: true });
 						message.channel.send(`>>> You have arrived at your destination: ${nameList[j]}. Thank you for flying with Altaria Airways!`);
 						console.log('New player location set as ' + profile.currentLocation);
 						populateReacts = false;
@@ -682,7 +681,7 @@ module.exports = {
 						break;
 					}
 					else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '▶️') {
-						if (oldOption === 1) option = 2; 
+						if (oldOption === 1) option = 2;
 						if (oldOption === 2) option = 3;
 						populateReacts = false;
 						decision = false;
@@ -690,7 +689,7 @@ module.exports = {
 						break;
 					}
 					else if (emojiList[i] === collected.first().emoji.name && emojiList[i] === '◀️') {
-						if (oldOption === 2) option = 1; 
+						if (oldOption === 2) option = 1;
 						if (oldOption === 3) option = 2;
 						populateReacts = false;
 						decision = false;
@@ -706,8 +705,8 @@ module.exports = {
 				console.log('1. ' + option + decision);
 			}
 			catch (error) {
-				console.log(error)
-				await message.channel.send('>>> Error: Your command has timed out. Please start again.')
+				console.log(error);
+				await message.channel.send('>>> Error: Your command has timed out. Please start again.');
 				await User.findOneAndUpdate({ _id: message.author.id }, { mapStatus: 'closed' });
 				populateReacts = false;
 				decision = true;
@@ -730,32 +729,32 @@ module.exports = {
 			const ferryLocNames = [];
 
 			for (let i = 0; i < location.ferry.length; i++) {
-				ferryNumEmoji.push(emojiCharacters[i+1]);
-				const tempLoc = await Location.findOne({_id: location.ferry[i].id});
+				ferryNumEmoji.push(emojiCharacters[i + 1]);
+				const tempLoc = await Location.findOne({ _id: location.ferry[i].id });
 				ferryLocNames[i] = tempLoc.name;
 				let costLocked = '';
 				if (profile.money < location.ferry[i].cost) costLocked = ' 🔒';
-				
+
 				switch (tempLoc.island) {
-					case 'Brol Island':
-						brolFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`);
-						break;
+				case 'Brol Island':
+					brolFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`);
+					break;
 
-					case 'Kronea Island':
-						kroneaFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`)
-						break;
+				case 'Kronea Island':
+					kroneaFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`);
+					break;
 
-					case 'Tilnen Island':
-						tilnenFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`)
-						break;
+				case 'Tilnen Island':
+					tilnenFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`);
+					break;
 
-					case 'Xybryle Island':
-						xybryleFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`)
-						break;
+				case 'Xybryle Island':
+					xybryleFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`);
+					break;
 
-					case 'Krtuso Island':
-						krtusoFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`)
-						break;
+				case 'Krtuso Island':
+					krtusoFerries.push(`${ferryNumEmoji[i]} ${location.ferry[i].cost}P - ${tempLoc.name}${costLocked}`);
+					break;
 				}
 			}
 
@@ -773,59 +772,59 @@ module.exports = {
 				.setFooter('React with ❎ to close your map.');
 
 			await message.channel.send(ferryEmbed)
-			.then(embed => {
-				for (const emoji of ferryNumEmoji) {
-					embed.react(emoji);
-				}
-				const filter = ( reaction, user) => {
-					return ferryNumEmoji.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
-				}
-				return { embed, filter }
-			})
-			.then(async ({ embed, filter }) => {
-				embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
-				.then(async collected => {
-					for (let i = 0; i < ferryNumEmoji.length; i++) {
-						if (ferryNumEmoji[i] === collected.first().emoji.name && ferryNumEmoji[i] !== '❎') {
-							if (profile.money >= location.ferry[i].cost) {
-								let updatedProfile = {
-									currentLocation: location.ferry[i].id,
-									money: profile.money - location.ferry[i].cost,
-									visited: profile.visited,
-									mapStatus: 'closed'
-								}
-								if (updatedProfile.visited.indexOf(location.ferry[i].id) === -1) {
-									updatedProfile.visited.push(location.ferry[i].id);
-								}
-								profile = await User.findOneAndUpdate({_id: profile._id}, updatedProfile, { new: true});
-								message.channel.send(`>>> The Neptune Ferry has brought you to ${ferryLocNames[i]}. You pay the fee of ${location.ferry[i].cost}P.`);
-								console.log('New player location set as ' + profile.currentLocation);
-								break;
-							}
-							else {
-								message.channel.send(`>>> Error: You do not have enough money to take the ferry to ${ferryLocNames[i]}.`);
-								await User.findOneAndUpdate({ _id: profile._id }, { mapStatus: 'closed' });
-								break;
-							}
-						}
-						else if (ferryNumEmoji[i] === collected.first().emoji.name && ferryNumEmoji[i] === '❎') {
-							message.channel.send('>>> Map closed.');
-							await User.findOneAndUpdate({ _id: profile._id }, { mapStatus: 'closed' });
-							break;
-						}
+				.then(embed => {
+					for (const emoji of ferryNumEmoji) {
+						embed.react(emoji);
 					}
-					return;
+					const filter = (reaction, user) => {
+						return ferryNumEmoji.indexOf(reaction.emoji.name) !== -1 && user.id === message.author.id;
+					};
+					return { embed, filter };
 				})
-				.catch((error) => {
-					console.log(error)
-					message.channel.send('>>> Error: Your command has timed out. Please start again.')
-					.then(async () => {
-						await User.findOneAndUpdate({ _id: profile._id }, { mapStatus: 'closed' });
-					});
+				.then(async ({ embed, filter }) => {
+					embed.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+						.then(async collected => {
+							for (let i = 0; i < ferryNumEmoji.length; i++) {
+								if (ferryNumEmoji[i] === collected.first().emoji.name && ferryNumEmoji[i] !== '❎') {
+									if (profile.money >= location.ferry[i].cost) {
+										const updatedProfile = {
+											currentLocation: location.ferry[i].id,
+											money: profile.money - location.ferry[i].cost,
+											visited: profile.visited,
+											mapStatus: 'closed',
+										};
+										if (updatedProfile.visited.indexOf(location.ferry[i].id) === -1) {
+											updatedProfile.visited.push(location.ferry[i].id);
+										}
+										profile = await User.findOneAndUpdate({ _id: profile._id }, updatedProfile, { new: true });
+										message.channel.send(`>>> The Neptune Ferry has brought you to ${ferryLocNames[i]}. You pay the fee of ${location.ferry[i].cost}P.`);
+										console.log('New player location set as ' + profile.currentLocation);
+										break;
+									}
+									else {
+										message.channel.send(`>>> Error: You do not have enough money to take the ferry to ${ferryLocNames[i]}.`);
+										await User.findOneAndUpdate({ _id: profile._id }, { mapStatus: 'closed' });
+										break;
+									}
+								}
+								else if (ferryNumEmoji[i] === collected.first().emoji.name && ferryNumEmoji[i] === '❎') {
+									message.channel.send('>>> Map closed.');
+									await User.findOneAndUpdate({ _id: profile._id }, { mapStatus: 'closed' });
+									break;
+								}
+							}
+							return;
+						})
+						.catch((error) => {
+							console.log(error);
+							message.channel.send('>>> Error: Your command has timed out. Please start again.')
+								.then(async () => {
+									await User.findOneAndUpdate({ _id: profile._id }, { mapStatus: 'closed' });
+								});
+							return;
+						});
 					return;
-				})
-				return;
-			})
+				});
 
 		}
 	},

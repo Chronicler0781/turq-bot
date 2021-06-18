@@ -2,29 +2,28 @@ const { Location } = require('../models');
 // Script updates locations with listed properties, adds a location if it doesn't exist in the db
 
 async function main() {
-
 	try {
-
 		const mongoose = require('mongoose');
 		const conf = require('../config.json');
-		mongoose.connect(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true});
+		mongoose.connect(conf.uri, { useNewUrlParser: true, useUnifiedTopology: true });
 		const db = mongoose.connection;
 		db.on('error', console.error.bind(console, 'connection error:'));
 		db.once('open', function() {
 			console.log('connected to mongodb');
 		});
-	
+
 		const data = await Location.find()
-            .populate({path: 'accessedBy', select: '_id name locNames areaName island accessedBy ferry'});
+			.populate({ path: 'accessedBy', select: '_id name locNames areaName island accessedBy ferry' });
 		console.log(data[0]);
 
 		// leddinTown = await Location.findOne({_id: 'leddintown'});
 		// console.log(leddinTown.ferry[0].id.name);
-		const check = 2;
+		const check = 1;
 
 		if (check === 0) {
+			// eslint-disable-next-line no-unused-vars
 			await Location.remove({}, (err, product) => {
-				if (err) return handleError(err);
+				if (err) return err;
 			});
 		}
 
@@ -53,12 +52,12 @@ async function main() {
 					],
 					hasTrainers: true,
 					shops: ['PokéMart'],
-				}, 
+				},
 			);
 
 			// Route NL1 South
 			await Location.create(
-				{ 
+				{
 					_id: 'routenl1south',
 					name: 'Route NL1 South',
 					isPrimaryLoc: true,
@@ -251,7 +250,7 @@ async function main() {
 					fishing: [
 						{ probability: 75, pokemon: [
 							{ name: 'latikrai', minLvl: 10, maxLvl: 22 },
-							{ name: 'basculinr', minLvl: 18 },
+							{ name: 'basculin', minLvl: 18 },
 						] },
 						{ probability: 25, pokemon: [
 							{ name: 'kelfee', minLvl: 10, maxLvl: 33 },
@@ -313,6 +312,7 @@ async function main() {
 						{ probability: 15, pokemon: [
 							{ name: 'espurr', minLvl: 5, maxLvl: 27 },
 							{ name: 'meowstic', minLvl: 23 },
+							{ name: 'meowsticf', minLvl: 23 },
 						] },
 						{ probability: 10, pokemon: [
 							{ name: 'petilil', minLvl: 5 },
@@ -327,7 +327,7 @@ async function main() {
 						] },
 						{ probability: 40, pokemon: [
 							{ name: 'carvanha', minLvl: 10, maxLvl: 19 },
-							{ name: 'basculinb', minLvl: 20 },
+							{ name: 'basculinbluestriped', minLvl: 20 },
 						] },
 						{ probability: 15, pokemon: [
 							{ name: 'carvanha', minLvl: 10, maxLvl: 24 },
@@ -378,6 +378,7 @@ async function main() {
 						{ probability: 15, pokemon: [
 							{ name: 'espurr', minLvl: 8, maxLvl: 27 },
 							{ name: 'meowstic', minLvl: 23 },
+							{ name: 'meowsticf', minLvl: 23 },
 						] },
 						{ probability: 10, pokemon: [
 							{ name: 'natu', minLvl: 8, maxLvl: 27 },
@@ -576,7 +577,7 @@ async function main() {
 					fishing: [
 						{ probability: 75, pokemon: [
 							{ name: 'latikrai', minLvl: 10, maxLvl: 22 },
-							{ name: 'basculinb', minLvl: 18 },
+							{ name: 'basculinbluestriped', minLvl: 18 },
 						] },
 						{ probability: 25, pokemon: [
 							{ name: 'clauncher', minLvl: 10, maxLvl: 39 },
@@ -620,6 +621,7 @@ async function main() {
 							{ name: 'gowatu', minLvl: 5, maxLvl: 27 },
 							{ name: 'turatal', minLvl: 23, maxLvl: 29 },
 							{ name: 'josuche', minLvl: 30 },
+							{ name: 'josuchef', minLvl: 30 },
 						] },
 						{ probability: 10, pokemon: [
 							{ name: 'curlsa', minLvl: 5, maxLvl: 24 },
@@ -684,7 +686,7 @@ async function main() {
 							{ name: 'tianglis', minLvl: 13 },
 						] },
 						{ probability: 10, pokemon: [
-							{ name: 'farfetch\'d', minLvl: 12, maxLvl: 39 },
+							{ name: 'farfetchd', minLvl: 12, maxLvl: 39 },
 							{ name: 'rapscalion', minLvl: 35 },
 						] },
 						{ probability: 10, pokemon: [
@@ -1185,7 +1187,7 @@ async function main() {
 					fishing: [
 						{ probability: 75, pokemon: [
 							{ name: 'latikrai', minLvl: 10, maxLvl: 22 },
-							{ name: 'basculinb', minLvl: 18 },
+							{ name: 'basculinbluestriped', minLvl: 18 },
 						] },
 						{ probability: 25, pokemon: [
 							{ name: 'skrelp', minLvl: 10, maxLvl: 50 },
@@ -1229,7 +1231,7 @@ async function main() {
 							{ name: 'chaszin', minLvl: 18 },
 						] },
 						{ probability: 15, pokemon: [
-							{ name: 'farfetch\'d', minLvl: 6, maxLvl: 39 },
+							{ name: 'farfetchd', minLvl: 6, maxLvl: 39 },
 							{ name: 'rapscalion', minLvl: 35 },
 						] },
 						{ probability: 10, pokemon: [
@@ -1241,7 +1243,7 @@ async function main() {
 							{ name: 'zangoose', minLvl: 20 },
 						] },
 						{ probability: 4, pokemon: [
-							{ name: 'farfetch\'d', minLvl: 6, maxLvl: 24 },
+							{ name: 'farfetchd', minLvl: 6, maxLvl: 24 },
 							{ name: 'hawlucha', minLvl: 25 },
 						] },
 						{ probability: 1, pokemon: [
@@ -1291,7 +1293,7 @@ async function main() {
 							{ name: 'seviper', minLvl: 20 },
 						] },
 						{ probability: 10, pokemon: [
-							{ name: 'farfetch\'d', minLvl: 9, maxLvl: 24 },
+							{ name: 'farfetchd', minLvl: 9, maxLvl: 24 },
 							{ name: 'hawlucha', minLvl: 25 },
 						] },
 						{ probability: 10, pokemon: [
@@ -1607,7 +1609,7 @@ async function main() {
 					fishing: [
 						{ probability: 75, pokemon: [
 							{ name: 'latikrai', minLvl: 10, maxLvl: 22 },
-							{ name: 'basculinb', minLvl: 18 },
+							{ name: 'basculinbluestriped', minLvl: 18 },
 						] },
 						{ probability: 25, pokemon: [
 							{ name: 'kelfee', minLvl: 10, maxLvl: 33 },
@@ -1992,7 +1994,7 @@ async function main() {
 					fishing: [
 						{ probability: 75, pokemon: [
 							{ name: 'latikrai', minLvl: 10, maxLvl: 22 },
-							{ name: 'basculinr', minLvl: 18 },
+							{ name: 'basculin', minLvl: 18 },
 						] },
 						{ probability: 25, pokemon: [
 							{ name: 'clauncher', minLvl: 10, maxLvl: 39 },
@@ -2031,7 +2033,7 @@ async function main() {
 					fishing: [
 						{ probability: 75, pokemon: [
 							{ name: 'latikrai', minLvl: 10, maxLvl: 22 },
-							{ name: 'basculinb', minLvl: 18 },
+							{ name: 'basculinbluestriped', minLvl: 18 },
 						] },
 						{ probability: 25, pokemon: [
 							{ name: 'skrelp', minLvl: 10, maxLvl: 50 },
