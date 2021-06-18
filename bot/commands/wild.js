@@ -73,7 +73,7 @@ module.exports = {
 						// create wild pokemon object and instance in database,
 						// along with opponent party array for accessing pokemon info in-battle
 						console.log(wildpoke);
-						let wildPokemon = genPokemon(wildpoke, '', wildLevel, profile, 'Wild');
+						let wildPokemon = genPokemon(wildpoke, '', wildLevel, profile._id, 'Wild');
 						wildPokemon = await Pokemon.create(wildPokemon);
 						console.log('New Pokémon assigned ID: ' + wildPokemon._id);
 						const oppParty = [wildPokemon];
@@ -87,7 +87,7 @@ module.exports = {
 						for (const pokemonID of profile.party) {
 							const tempPoke = await Pokemon.findOne({ _id: pokemonID });
 							party.push(tempPoke);
-							if (tempPoke.status === 'Fainted') {
+							if (tempPoke.status === 'FNT') {
 								fainted.push(i);
 							}
 							playerTeam.push({ _id: pokemonID, nickname: tempPoke.nickname, pokemon: tempPoke.pokemon });

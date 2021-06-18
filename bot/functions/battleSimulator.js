@@ -5,7 +5,15 @@ const utils = require('../lib/utils');
 module.exports = async function battleSimulator(Discord, bot, message, battle, profile, location, party, oppParty) {
 
 	// Set active pokemon for player and opponent
-	let active = party[0];
+	let active = null;
+	for (let i = 0; i < 5; i++) {
+		if (battle.fainted.indexOf(i) !== -1) continue;
+		active = party[i];
+		battle.active.position = i;
+		break;
+	}
+
+	console.log(active);
 	// Disabled: opponent will be able to change with trainer battles
 	// eslint-disable-next-line prefer-const
 	let opponent = oppParty[0];
@@ -42,11 +50,14 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		winnerDetermined = false,
 		winner = false,
 		ranAway = false,
-		turnSummaryTitle = 'Battle Start',
-		turnSummary = ['Please select an option from the menu above.'];
+		turnSummaryTitle = 'Turn 0: Battle Start',
+		turnSummary = ['Please enter an action.'],
+		activeStatusText = active.status ? ` [${active.status}]` : '',
+		opponentStatusText = opponent.status ? ` [${opponent.status}]` : '';
 
 	const Sim = require('../../../pokemon-showdown');
-	const streams = Sim.getPlayerStreams(new Sim.BattleStream());
+	const battleStream = new Sim.BattleStream();
+	const streams = Sim.getPlayerStreams(battleStream);
 	const p2 = new Sim.RandomPlayerAI(streams.p2);
 
 	// iterate battle turns while battle is unfinished.
@@ -55,11 +66,15 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		// After turn, update battle image if a pokemon has been switched/fainted
 		if (actionTaken) {
 			if (swapped) {
-				[activeGend, opponentGend, opponentShinyAddOn] = await generateBattleImage();
+				await generateBattleImage();
 				swapped = false;
 			}
 			turnSummaryTitle = `Turn ${battle.turn - 1}`;
 		}
+
+		// Re-render statuses
+		activeStatusText = active.status ? ` [${active.status}]` : '',
+		opponentStatusText = opponent.status ? ` [${opponent.status}]` : '';
 
 		// reset actionTaken boolean for new turn
 		actionTaken = false;
@@ -82,21 +97,21 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 				.addFields(
 					{ name: `${battleOptions[0]}`, value: `${battleOptions[1]}`, inline: true },
 					{ name: `${battleOptions[2]}`, value: `${battleOptions[3]}`, inline: true },
-					{ name: `__${turnSummaryTitle}:__`, value: `${turnSummary.join('\n')}` },
+					{ name: `__${turnSummaryTitle}__`, value: `*${turnSummary.join('\n')}` },
 					{
 						name: `__Lvl.${active.level} ${active.pokemon} ${activeGend}__`,
-						value: `**HP:** ${active.currentHP}/${active.maxHP}${active.status}`,
+						value: `**HP:** ${active.currentHP}/${active.maxHP}${activeStatusText}`,
 						inline: true,
 					},
 					{
 						name: `__Lvl.${opponent.level} ${opponent.pokemon} ${opponentGend}__`,
-						value: `**HP:** ${opponent.currentHP}/${opponent.maxHP}${opponent.status}`,
+						value: `**HP:** ${opponent.currentHP}/${opponent.maxHP}${opponentStatusText}`,
 						inline: true,
 					},
 				)
 				.attachFiles(['./images/tempBattle.png'])
-				.setImage('attachment://tempBattle.png');
-			//  .setFooter('Battle Started:')
+				.setImage('attachment://tempBattle.png')
+				.setFooter('Type the letter or word corresponding to the action\nyou\'d like to take!');
 			//  .setTimestamp();
 
 			let noOptionPicked = true,
@@ -121,7 +136,6 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							noOptionPicked = false;
 							firstMenu = false;
 							await runFightEmbed();
-							console.log('RunFightEmbed finished.');
 							// await embedMessage.delete();
 							break;
 						}
@@ -170,14 +184,13 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 
 	if (winnerDetermined) {
-		turnSummaryTitle = 'Battle End';
-		console.log('TurnSummary at end: \n' + turnSummary);
+		turnSummaryTitle = `Turn ${battle.turn}: Battle End`;
 		const endEmbed = new Discord.MessageEmbed()
 			.setColor('#0099ff')
 			.setAuthor(`${location.name}`)
 			.setTitle(title)
 			.addFields(
-				{ name: `__${turnSummaryTitle}:__`, value: `${turnSummary.join('\n')}` },
+				{ name: `__${turnSummaryTitle}__`, value: `${turnSummary.join('\n')}` },
 			);
 		// .setFooter('Battle Finished')
 		// .setTimestamp();
@@ -279,9 +292,9 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 			moveOptions = [];
 
 		for (let i = 0; i < 4; i++) {
-			if (active.moves[i]) {
+			if (active.setMoves[i]) {
 				moveEmojis.push(emojiCharacters[i + 1]);
-				moveOptions.push(`${moveEmojis[i]} ${active.moves[i]}`);
+				moveOptions.push(`${moveEmojis[i]} ${active.setMoves[i]}`);
 			}
 			else {
 				moveOptions.push('-');
@@ -315,12 +328,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					const moveChoice = moveOptions[i].slice(4);
 					actionTaken = true;
 					await battleInitiate(moveChoice);
-					console.log('TurnSummary in fightembed: \n' + turnSummary);
 					return;
-					/* console.log('Battle phase over.');
-					actionTaken = true;
-					// await embedMessage2.delete();
-					return;*/
 				}
 				else if (moveEmojis[i] === collected.first().emoji.name && moveEmojis[i] === '❎') {
 					// actionTaken = false;
@@ -334,15 +342,15 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 			console.log('Save battle status to database');
 			actionTaken = true;
 			battleDone = true;
+			ranAway = true;
 			return;
 		}
 	}
 
+	// eslint-disable-next-line no-unused-vars
 	function battleInitiate(activeMove) {
 		// eslint-disable-next-line no-unused-vars
 		return new Promise(function(resolve, reject) {
-
-			console.log('Promise initiated.');
 
 			if (!simInitiated) {
 				const spec = {
@@ -359,7 +367,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 						gender: pokemon.gender.charAt(0),
 						happiness: pokemon.happiness,
 						nature: pokemon.nature,
-						moves: pokemon.moves,
+						moves: pokemon.setMoves,
 						ability: pokemon.abilityNo,
 						evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
 						ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
@@ -368,7 +376,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 						shiny: pokemon.shiny,
 					};
 					playerTeam.push(teamMember);
-					partyState.push({ position: p, hp: pokemon.currentHP, status: pokemon.status });
+					partyState.push({ position: p, hp: pokemon.currentHP, status: pokemon.status.toLowerCase() });
 					p++;
 				}
 
@@ -380,7 +388,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 						gender: pokemon.gender.charAt(0),
 						happiness: pokemon.happiness,
 						nature: pokemon.nature,
-						moves: pokemon.moves,
+						moves: pokemon.setMoves,
 						ability: pokemon.abilityNo,
 						evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
 						ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
@@ -404,12 +412,18 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 				streams.omniscient.write(`>start ${JSON.stringify(spec)}`);
 				streams.omniscient.write(`>player p1 ${JSON.stringify(p1spec)}`);
 				streams.omniscient.write(`>player p2 ${JSON.stringify(p2spec)}`);
+				streams.omniscient.write(`>updatePlayerState ${JSON.stringify(partyState)}`);
 				streams.omniscient.write('>p1 team 123456');
 				streams.omniscient.write('>p2 team 123456');
-				streams.omniscient.write(`>updatePlayerState ${JSON.stringify(partyState)}`);
 
 				simInitiated = true;
 			}
+
+			// streams.omniscient.write('>p1 switch 2');
+			setTimeout(() => {
+				streams.omniscient.write(`>p1 move ${activeMove}`);
+			}, 100);
+			// stream.write(`>p2 move ${oppMove}`);
 
 			(async () => {
 				// eslint-disable-next-line no-unused-vars
@@ -425,7 +439,11 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					prizeMoneyBase = null,
 					prizeMoney = null,
 					maxLevel = 0,
-					newLocation = null;
+					newLocation = null,
+					inflictedBy = null,
+					sourceAbility = null,
+					sourceItem = null,
+					effect = null;
 
 				let activeName = active.nickname;
 				if (!activeName) activeName = active.pokemon;
@@ -434,11 +452,11 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 				if (battle.opponent.type !== 'Wild') {
 					foesName = `The opposing ${opponent.pokemon}`;
 				}
+				turnSummary = [];
 
 				for await (const output of streams.omniscient) {
 					console.log('\nStream Output ' + i + ': ');
 					results = output.split('\n');
-					turnSummary = [];
 
 					for (const line of results) {
 						console.log(line);
@@ -447,14 +465,34 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 						switch (item[1]) {
 
-						// WIP - ATTACKER's MOVE/effect targeted at POKEMON was blocked by EFFECT
-						// |-block|POKEMON|EFFECT|MOVE|ATTACKER
+						// WIP  - a miscellaneous EFFECT activated, potentially by POKEMON. Skip when item[4] is [silent]
+						// |-activate|EFFECT
+						// |-activate|POKEMON|EFFECT
+						case '-activate':
+							if (item[2].indexOf('p1a') !== -1 || item[2].indexOf('p2a') !== -1) {
+								if (item[2].split(':')[0] === 'p1a') { sourceName = activeName; }
+								else { sourceName = foesName; }
+								effect = item[3];
+							}
+							switch (effect) {
+							case 'move: Bide':
+								turnSummary.push(`${sourceName} is storing energy!`);
+								break;
+							default:
+								turnSummary.push('An undetermined effect activated!');
+								break;
+							}
+							effect = null;
+							break;
+
+							// WIP - ATTACKER's MOVE/effect targeted at POKEMON was blocked by EFFECT
+							// |-block|POKEMON|EFFECT|MOVE|ATTACKER
 						case '-block':
 
 							break;
 
-						// POKEMON's STAT is boosted by AMOUNT levels, to a max of 6
-						// |-boost|POKEMON|STAT|AMOUNT
+							// POKEMON's STAT is boosted by AMOUNT levels, to a max of 6
+							// |-boost|POKEMON|STAT|AMOUNT
 						case '-boost':
 							switch (item[3]) {
 							case 'atk':
@@ -536,12 +574,13 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							// WIP - POKEMON was not able to do something (potentially MOVE) because of REASON.
 							// |cant|POKEMON|REASON|*MOVE*
 						case 'cant':
-							// X is paralyzed!
-							// It can't move!
 							if (item[2].split(':')[0] === 'p1a') { sourceName = activeName; }
 							else { sourceName = foesName; }
 
 							switch (item[3]) {
+							case 'flinch':
+								turnSummary.push(`${sourceName} flinched!`);
+								break;
 							case 'par':
 								turnSummary.push(`${sourceName} is paralyzed! It can't move!`);
 								break;
@@ -549,55 +588,50 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 								turnSummary.push(`Something undefined prevented ${sourceName} from attacking!`);
 								break;
 							}
-
 							break;
 
-							// WIP  -
-							// ||
-						case '':
-							break;
 
 							// WIP - specified POKEMON recovers from STATUS
 							// |-curestatus|POKEMON|STATUS
 						case '-curestatus':
-
 							break;
+
 
 							// WIP - POKEMON has used move to cure all team status effects (heal bell)
 							// |-cureteam|POKEMON
 						case '-cureteam':
-
 							break;
+
 
 							// WIP - clears all bof the boosts of all POKEMON (Ex: Haze)
 							// |-clearallboost
 						case '-clearallboost':
-
 							break;
+
 
 							// WIP - Clears all of the boosts of specified POKEMON (Ex: Clear Smog)
 							// |-clearboost|POKEMON
 						case '-clearboost':
-
 							break;
+
 
 							// WIP - Clears all negative boosts from the target POKEMON (Ex: z-effects)
 							// |-clearnegativeboost|POKEMON
 						case '-clearnegativeboost':
-
 							break;
+
 
 							// WIP - Clears all positive boosts of TARGET due to EFFECT of POKEMON (Ex: Spectral Thief)
 							// |-clearpositiveboost|TARGET|POKEMON|EFFECT
 						case '-clearpositiveboost':
-
 							break;
+
 
 							// WIP - Copies boost from SOURCE to TARGET (Ex: Psych Up)
 							// |-copyboost|SOURCE|TARGET
 						case '-copyboost':
-
 							break;
+
 
 							// Critical hit was perfomed on POKEMON
 							// |-crit|POKEMON
@@ -605,12 +639,13 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							turnSummary.push('It\'s a critical hit!');
 							break;
 
+
 							// WIP - POKEMON has changed formes temporarily (-formechange) or permanently (detailschange) for duration of battle
 							// |detailschange|POKEMON|DETAILS|HP STATUS   OR   |-formechange|POKEMON|SPECIES|HP STATUS
 						case 'detailschange':
 						case '-formechange':
-
 							break;
+
 
 							// Set new HP status for specified POKEMON by SOURCE (optional)
 							// |-damage|POKEMON|HP STATUS|SOURCE
@@ -631,18 +666,24 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							if (item[4]) {
 								if (item[5]) {
 									if (item[5].split(' ')[1] === 'p1a:') { sourceName = activeName; }
-									else { sourceName = foesName; }
+									else { sourceName = foesName.charAt(0).toLowerCase() + foesName.slice(1); }
 								}
-								let hurtBy = item[4].split('[from] ')[1],
-									sourceAbility = null;
+								let hurtBy = item[4].split('[from] ')[1];
 								if (hurtBy.indexOf('ability') !== -1) {
 									sourceAbility = hurtBy.split(': ')[1];
 									hurtBy = 'ability';
+								}
+								if (hurtBy.indexOf('item') !== -1) {
+									sourceItem = hurtBy.split(': ')[1];
+									hurtBy = 'item';
 								}
 
 								switch (hurtBy) {
 								case 'ability':
 									turnSummary.push(`${targetName} was hurt by ${sourceName}'s ${sourceAbility}!`);
+									break;
+								case 'item':
+									turnSummary.push(`${targetName} was hurt by its ${sourceItem}`);
 									break;
 								case 'psn':
 									turnSummary.push(`${targetName} was hurt by poison!`);
@@ -657,18 +698,33 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							}
 							break;
 
+
 							// WIP - same as switch, except forced. If opponent, reset participated. If player, add to participated
 							// WIP - swap active or opponent active with another mon. If opponent, reset participated. If player, add to participated
 							// |drag|POKEMON|DETAILS|HP STATUS   OR   |switch|POKEMON|DETAILS|HP STATUS
 						case 'drag':
 						case 'switch':
-
 							break;
+
 
 							// WIP - The [*volatile* status] inflicted on POKEMON by EFFECT has ended.
+							// if end with [silent], skip
 							// |-end|POKEMON|EFFECT
 						case '-end':
+							if (item[4]) {
+								if (item[4] === '[silent]') { continue; }
+							}
+							effect = item[2];
+							if (item[2].split(':')[0] === 'p1a') { targetName = activeName; }
+							else { targetName = foesName; }
+
+							switch (item[3]) {
+							case 'move: Bide':
+								turnSummary.push(`${targetName} unleashed energy!`);
+								break;
+							}
 							break;
+
 
 							// WIP - ITEM held by POKEMON has been destroyed due toEFFECT (move/ability)
 							// This will be [silent] if item's ownership changes.
@@ -679,27 +735,38 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 						case '-enditem':
 							break;
 
+
 							// WIP - ACTION has failed against specific target POKEMON
 							// |-fail|POKEMON|ACTION
 						case '-fail':
 							turnSummary.push('But it failed!');
 							break;
 
+
 							// WIP - If player, request new switch in. If opponent, apply experience, level ups, evolution tracker
 							// |faint|POKEMON
 						case 'faint':
 							if (item[2].split(':')[0] === 'p1a') {
-								active.status = 'Fainted';
+								active.status = 'FNT';
 								battle.fainted.push(battle.active.position);
 								party[battle.active.position] = active;
 								turnSummary.push(`${activeName} fainted!`);
 
 								if (party.length !== battle.fainted.length) {
-									// switch menu
+									console.log('\np1 active requests after faint \n');
+									console.log(battleStream.battle.p1.activeRequest);
+									console.log('\np2 active requests after faint\n');
+									console.log(battleStream.battle.p2.activeRequest);
+									streams.omniscient.write('>p1 switch 2');
+									// streams.omniscient.write('>requestlog');
+									// p2.receiveRequest({ wait: true });
+
+									swapped = true;
+									active = party[1];
 								}
 							}
 							else {
-								opponent.status = 'Fainted';
+								opponent.status = 'FNT';
 								battle.opponentFainted.push(battle.opponentActive.position);
 								oppParty[battle.opponentActive.position] = opponent;
 								turnSummary.push(`${foesName} fainted!`);
@@ -721,17 +788,18 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							}
 							break;
 
+
 							// WIP -
 							// |-fieldend|CONDITION
 						case '-fieldend':
-
 							break;
+
 
 							// WIP -
 							// |-fieldstart|CONDITION
 						case '-fieldstart':
-
 							break;
+
 
 							// Set new HP STATUS for specified POKEMON
 							// |-heal|POKEMON|HP STATUS|
@@ -745,7 +813,34 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 								opponent.currentHP = tempHP;
 								targetName = foesName;
 							}
-							turnSummary.push(`${targetName} had its HP resotred.`);
+
+							// If hurt by something other than an opponent's move
+							if (item[4]) {
+								let healedBy = item[4].split('[from] ')[1];
+								if (healedBy.indexOf('ability') !== -1) {
+									sourceAbility = healedBy.split(': ')[1];
+									healedBy = 'ability';
+								}
+								if (healedBy.indexOf('eat') !== -1) {
+									sourceItem = healedBy.split(': ')[1];
+									healedBy = 'eat';
+								}
+
+								switch (healedBy) {
+								case 'ability':
+									turnSummary.push(`${targetName}'s ${sourceAbility} restored its HP!`);
+									break;
+								case 'eat':
+									turnSummary.push(`${targetName} restored HP using its ${sourceItem}`);
+									break;
+								default:
+									turnSummary.push(`${targetName} was healed by something undefined!`);
+									break;
+								}
+							}
+							else {
+								turnSummary.push(`${targetName} had its HP restored.`);
+							}
 							break;
 
 							// WIP - A multi-hit move hit POKEMON NUM times.
@@ -848,37 +943,69 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							// WIP - a [*volatile* status] has been inflicted on POKEMON by EFFECT.
 							// |-start|POKEMON|EFFECT
 						case '-start':
+							if (item[2].split(':')[0] === 'p1a') { targetName = activeName; }
+							else { targetName = foesName; }
+
+							switch (item[3]) {
+							case 'move: Bide':
+								// To-do: disable user options for next round if user is biding.
+								break;
+							case 'Torment':
+								turnSummary.push(`${targetName} was subjected to Torment!`);
+								// To-do: disable user move
+							}
+
 							break;
 
-							// WIP - specified POKEMON has been inflcited with STATUS
-							// |-status|POKEMON|STATUS
+							// WIP - specified TARGET has been inflcited with STATUS, potentiall from SOURCE's EFFECT
+							// |-status|TARGET|STATUS|[from] EFFECT]|[of] SORUCE
 						case '-status':
 							if (item[2].split(':')[0] === 'p1a') {
-								targetName = `${activeName}`;
+								targetName = activeName;
 								tempPoke = active;
 							}
 							else {
-								targetName = `${foesName}`;
+								targetName = foesName;
 								tempPoke = opponent;
+							}
+
+							if (item[4]) {
+								if (item[5]) {
+									if (item[5].split(' ')[1] === 'p1a:') { sourceName = activeName; }
+									else { sourceName = foesName.charAt(0).toLowerCase() + foesName.slice(1); }
+								}
+								inflictedBy = item[4].split('[from] ')[1];
+								if (inflictedBy.indexOf('ability') !== -1) {
+									sourceAbility = inflictedBy.split(': ')[1];
+									inflictedBy = 'ability';
+								}
 							}
 
 							switch (item[3]) {
 
+							case 'frz':
+								turnSummary.push(`${targetName} was frozen solid!`);
+								tempPoke.status = 'FRZ';
+								break;
 							case 'par':
 								turnSummary.push(`${targetName} was paralyzed!`);
-								tempPoke.status = ' [PRZ]';
+								tempPoke.status = 'PRZ';
 								break;
 							case 'psn':
-								turnSummary.push(`${targetName} was poisoned!`);
-								tempPoke.status = ' [PSN]';
+								if (inflictedBy === 'ability') {
+									turnSummary.push(`${targetName} was poisoned by ${sourceName}'s ${sourceAbility}!`);
+									inflictedBy = null;
+								}
+								else { turnSummary.push(`${targetName} was poisoned!`); }
+								tempPoke.status = 'PSN';
 								break;
 							case 'slp':
 								turnSummary.push(`${targetName} fell asleep!`);
-								tempPoke.status = ' [SLP]';
+								tempPoke.status = 'SLP';
 								break;
 							case 'tox':
 								turnSummary.push(`${targetName} was badly poisoned!`);
-								tempPoke.status = ' [PSN]';
+								tempPoke.status = 'PSN';
 								break;
 							default:
 								turnSummary.push(`${targetName} was afflicted with an undefined status!`);
@@ -925,18 +1052,20 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 										You scurry back ${healLocationPhrase}, protecting your exhausted Pokémon from any futher harm...`);
 
 							// Set HP, status, formes to normal
-							console.log('Promise resolve after tie');
-							resolve();
-							break;
+							return resolve();
+							// break;
 
 							// Sync battle object turn count with simulator turn count.
 							// |turn|AMOUNT
 						case 'turn':
 							if (item[2] !== battle.turn) battle.turn = item[2];
 							if (parseInt(item[2], 10) > 1) {
-								console.log('Promise resolved on turn: ' + item[2]);
-								resolve();
+								return resolve();
 							}
+							console.log('\np1 active requests after turn \n');
+							console.log(battleStream.battle.p1.activeRequest);
+							console.log('\np2 active requests after turn \n');
+							console.log(battleStream.battle.p2.activeRequest);
 							break;
 
 							// POKEMON's STAT is unboosted by AMOUNT levels, to a max of -6
@@ -966,8 +1095,8 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 							}
 
 							if (item[2].split(':')[0] === 'p1a') {
+								targetName = activeName;
 								if (battle.active.boosts[item[3]] > -6) {
-									targetName = activeName;
 									switch (item[4]) {
 									case '1':
 										battle.active.boosts[item[3]] -= 1;
@@ -1155,12 +1284,10 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 								}
 								profile.currentLocation = newLocation._id;
 								console.log('Player lost. New Location set.');
-								console.log('TurnSummary: \n' + turnSummary);
 								turnSummary.push(`\nYou have no more Pokémon that can fight!
 											You panicked and dropped ${prizeMoney}P...
 											You were overwhelmed by your defeat!
 											You scurry back ${healLocationPhrase}, protecting your exhausted Pokémon from any futher harm...`);
-								console.log('TurnSummary Update: \n' + turnSummary);
 
 								// WIP - fully heal team, update location to last PC
 								profile.money -= prizeMoney;
@@ -1168,9 +1295,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 								battleDone = true;
 								winnerDetermined = true;
 							}
-							console.log('Promise resolved after winner determined.');
-							resolve();
-							break;
+							return resolve();
 
 						default:
 							break;
@@ -1179,12 +1304,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					}
 					i++;
 				}
-				console.log('Promise resolved after tie');
-				resolve();
 			})();
-
-			streams.omniscient.write(`>p1 move ${activeMove}`);
-			// stream.write(`>p2 move ${oppMove}`);
 		});
 	}
 
@@ -1205,8 +1325,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		if (pokemon.currentTrainer !== pokemon.originalTrainer) t = 1.5;
 
 		let pokeName = pokemon.nickname,
-			newMoveset = pokemon.moves,
-			leveled = false;
+			newMoveset = pokemon.moves.slice();
 		if (!pokeName) pokeName = pokemon.pokemon;
 
 		// Calculate EXP gained with scaled formula, update Pokémon's current EXP.
@@ -1215,11 +1334,10 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		turnSummary.push(`${pokeName} gained ${expGained} Exp. Points!`);
 
 		// until all level ups have been added
-		while (pokemon.exp.current > pokemon.exp.nextLevel) {
+		while (pokemon.exp.current >= pokemon.exp.nextLevel) {
 
 			// update Pokemon level and current/max HP
 			pokemon.level += 1;
-			leveled = true;
 			const newStats = utils.getStats(pokemon.species, pokemon.level, pokemon.natureMultipliers);
 			const deltaHP = newStats[0] - pokemon.maxHP;
 			pokemon.maxHP = newStats[0];
@@ -1232,14 +1350,23 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 			// check for evolution
 
-			// update moveset with new pokemon level
+			// update moveset with new pokemon level moves if any
+			console.log(pokemon.moves);
 			newMoveset = utils.upsertMoveset(pokemon.species, pokemon.level, newMoveset, true);
-		}
-		if (leveled) {
+			console.log(newMoveset);
 			turnSummary.push(`${pokeName} grew to level ${pokemon.level}!`);
+			console.log(pokemon.moves);
+			console.log(newMoveset);
 			if (pokemon.moves !== newMoveset) {
 				for (let i = pokemon.moves.length; i < newMoveset.length; i++) {
+					console.log(i + ' ' + newMoveset[i]);
 					turnSummary.push(`${pokeName} learned ${newMoveset[i]}!`);
+					if (pokemon.setMoves.length < 4) {
+						pokemon.setMoves.push(newMoveset[i]);
+					}
+					else {
+						// To-do: ask if user want's to switch out a set move
+					}
 				}
 				pokemon.moves = newMoveset;
 			}

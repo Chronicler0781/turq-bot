@@ -19,7 +19,11 @@ module.exports = new Schema({
 	},
 	originalTrainer: String,
 	moves: [String],
-	setMoves: [String],
+	setMoves: [{
+		name: String,
+		currentPP: Number,
+		maxPP: Number,
+	}],
 	exp: {
 		current: Number,
 		percentage: Number,

@@ -2,12 +2,11 @@ const utils = require('../lib/utils');
 const dex = require('../../data/pokedex');
 
 // Description: This function creates a database entry for a wild or trainer-owned Pokémon
-module.exports = function generatePokemon(pokemon, nname, level, profile, type, item, specialMoves, abilityNum) {
+module.exports = function generatePokemon(pokemon, nname, level, originalTrainerID, type, item, specialMoves, abilityNum) {
 
 	let owner = '';
 	if (type === 'Gift') {
-		owner = profile.firstName;
-		if (profile.lastName) owner = owner + ' ' + profile.lastName;
+		owner = originalTrainerID;
 	}
 
 	// Set species for cosmetic formes

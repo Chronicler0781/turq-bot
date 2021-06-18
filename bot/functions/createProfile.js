@@ -186,16 +186,8 @@ module.exports = async function createProfile(Discord, bot, user, trainerRole, r
 								}
 
 								// create new database entry for specified starter pokemon
-								let OT = '';
-								if (answerList[1] === '') {
-									OT = answerList[0];
-								}
-								else {
-									OT = answerList[0] + ' ' + answerList[1];
-								}
-								const pkmn_obj = genPokemon(pokemon, answerList[5], 5, 'None', OT, userID);
+								const pkmn_obj = genPokemon(pokemon, answerList[5], 5, userID, 'Gift');
 								const starter = await Pokemon.create(pkmn_obj);
-
 								console.log(starter);
 
 								// create new database entry for tagged user, assigns new starter's pokemon ID to PartySlot1
@@ -216,7 +208,7 @@ module.exports = async function createProfile(Discord, bot, user, trainerRole, r
 									tms: [],
 									mapStatus: 'closed',
 									services: [],
-									party: [starter],
+									party: [starter._id],
 									boxes: utils.initiateNewBox([]),
 									rival: {
 										firstName: answerList[6],

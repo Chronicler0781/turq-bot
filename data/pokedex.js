@@ -1400,7 +1400,7 @@ module.exports = {
 		heldItems: [
 			{
 				name: 'Sticky Barb',
-				probability: 0.05,
+				probability: 1,
 			},
 		],
 	},
