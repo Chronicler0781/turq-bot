@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ferrySubSchema = new Schema({
-	id: { type: String, ref: 'Location'},
+	id: { type: String, ref: 'Location' },
 	cost: Number,
 }, { _id: false });
 
 const pokeSubSchema = new Schema({
-	name: { type: String, ref: 'DexEntry' },
+	name: String,
 	minLvl: Number,
 	maxLvl: Number,
 }, { _id: false });
 
 const wildSubSchema = new Schema({
 	probability: Number,
-	pokemon: [pokeSubSchema]
+	pokemon: [pokeSubSchema],
 }, { _id: false });
 
 const locSchema = new Schema({
@@ -49,7 +49,7 @@ locSchema.virtual('accessedBy', {
 	ref: 'Location',
 	localField: '_id',
 	foreignField: 'accessTo',
-	justOne: false
+	justOne: false,
 });
 
 locSchema.set('toObject', { virtuals: true });
