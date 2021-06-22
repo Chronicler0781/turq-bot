@@ -21,7 +21,7 @@ module.exports = new Schema({
 	moves: [String],
 	setMoves: [{
 		name: String,
-		currentPP: Number,
+		pp: Number,
 		maxPP: Number,
 	}],
 	exp: {

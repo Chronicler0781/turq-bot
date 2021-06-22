@@ -4,6 +4,13 @@ const utils = require('../lib/utils');
 
 module.exports = async function battleSimulator(Discord, bot, message, battle, profile, location, party, oppParty) {
 
+	// For pokemon-showdown simulator to work, you must open the node_modules/pokemon-showdown
+	// folder in the command line and run 'node build'.
+	const Sim = require('pokemon-showdown');
+	const battleStream = new Sim.BattleStream();
+	const streams = Sim.getPlayerStreams(battleStream);
+	const p2 = new Sim.RandomPlayerAI(streams.p2);
+
 	// Set active pokemon for player and opponent
 	let active = null;
 	for (let i = 0; i < 5; i++) {
@@ -13,7 +20,6 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		break;
 	}
 
-	console.log(active);
 	// Disabled: opponent will be able to change with trainer battles
 	// eslint-disable-next-line prefer-const
 	let opponent = oppParty[0];
@@ -55,11 +61,6 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		activeStatusText = active.status ? ` [${active.status}]` : '',
 		opponentStatusText = opponent.status ? ` [${opponent.status}]` : '';
 
-	const Sim = require('../../../pokemon-showdown');
-	const battleStream = new Sim.BattleStream();
-	const streams = Sim.getPlayerStreams(battleStream);
-	const p2 = new Sim.RandomPlayerAI(streams.p2);
-
 	// iterate battle turns while battle is unfinished.
 	while (!battleDone) {
 
@@ -97,7 +98,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 				.addFields(
 					{ name: `${battleOptions[0]}`, value: `${battleOptions[1]}`, inline: true },
 					{ name: `${battleOptions[2]}`, value: `${battleOptions[3]}`, inline: true },
-					{ name: `__${turnSummaryTitle}__`, value: `*${turnSummary.join('\n')}` },
+					{ name: `__${turnSummaryTitle}__`, value: `${turnSummary.join('\n')}` },
 					{
 						name: `__Lvl.${active.level} ${active.pokemon} ${activeGend}__`,
 						value: `**HP:** ${active.currentHP}/${active.maxHP}${activeStatusText}`,
@@ -294,7 +295,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 		for (let i = 0; i < 4; i++) {
 			if (active.setMoves[i]) {
 				moveEmojis.push(emojiCharacters[i + 1]);
-				moveOptions.push(`${moveEmojis[i]} ${active.setMoves[i]}`);
+				moveOptions.push(`${moveEmojis[i]} ${active.setMoves[i].name}`);
 			}
 			else {
 				moveOptions.push('-');
@@ -361,13 +362,17 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 					partyState = [];
 				let p = 0;
 				for (const pokemon of party) {
+					const battleMoves = [];
+					for (const move of pokemon.setMoves) {
+						battleMoves.push(move.name);
+					}
 					const teamMember = {
 						name: pokemon.pokemon,
 						species: pokemon.pokemon,
 						gender: pokemon.gender.charAt(0),
 						happiness: pokemon.happiness,
 						nature: pokemon.nature,
-						moves: pokemon.setMoves,
+						moves: battleMoves,
 						ability: pokemon.abilityNo,
 						evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
 						ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
@@ -382,13 +387,17 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 				const opponentTeam = [];
 				for (const pokemon of oppParty) {
+					const battleMoves = [];
+					for (const move of pokemon.setMoves) {
+						battleMoves.push(move.name);
+					}
 					const teamMember = {
 						name: pokemon.pokemon,
 						species: pokemon.pokemon,
 						gender: pokemon.gender.charAt(0),
 						happiness: pokemon.happiness,
 						nature: pokemon.nature,
-						moves: pokemon.setMoves,
+						moves: battleMoves,
 						ability: pokemon.abilityNo,
 						evs: { hp: 255, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
 						ivs: { hp: 31, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
@@ -1338,6 +1347,7 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 
 			// update Pokemon level and current/max HP
 			pokemon.level += 1;
+			turnSummary.push(`${pokeName} grew to level ${pokemon.level}!`);
 			const newStats = utils.getStats(pokemon.species, pokemon.level, pokemon.natureMultipliers);
 			const deltaHP = newStats[0] - pokemon.maxHP;
 			pokemon.maxHP = newStats[0];
@@ -1351,18 +1361,20 @@ module.exports = async function battleSimulator(Discord, bot, message, battle, p
 			// check for evolution
 
 			// update moveset with new pokemon level moves if any
-			console.log(pokemon.moves);
 			newMoveset = utils.upsertMoveset(pokemon.species, pokemon.level, newMoveset, true);
-			console.log(newMoveset);
-			turnSummary.push(`${pokeName} grew to level ${pokemon.level}!`);
-			console.log(pokemon.moves);
-			console.log(newMoveset);
 			if (pokemon.moves !== newMoveset) {
+
 				for (let i = pokemon.moves.length; i < newMoveset.length; i++) {
-					console.log(i + ' ' + newMoveset[i]);
 					turnSummary.push(`${pokeName} learned ${newMoveset[i]}!`);
+
+					// if room is setMoves for the new move, add it to setMoves
 					if (pokemon.setMoves.length < 4) {
-						pokemon.setMoves.push(newMoveset[i]);
+						const moveNames = [];
+						for (const move of pokemon.setMoves) {
+							moveNames.push(move.name);
+						}
+						moveNames.push(newMoveset[i]);
+						pokemon.setMoves = utils.fetchSetMoves(moveNames);
 					}
 					else {
 						// To-do: ask if user want's to switch out a set move
