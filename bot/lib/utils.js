@@ -35,6 +35,25 @@ function expLookup(pokemon, level, currentExp) {
 	return { current: currentExp, nextLevel: nextLevelExp, percent: percentage };
 }
 
+
+// Description: Takes Decided upon set moves, and fetches PP for them
+function fetchSetMoves(setMoves) {
+	const Sim = require('pokemon-showdown');
+	const moveData = Sim.Moves;
+	const setMovesObject = [];
+
+	for (const move of setMoves) {
+		const fetchedMove = Object.keys(moveData).find(key => moveData[key].name === move);
+		setMovesObject.push({
+			name: move,
+			pp: moveData[fetchedMove].pp,
+			maxPP: moveData[fetchedMove].pp,
+		});
+	}
+	return setMovesObject;
+}
+
+
 // Description: This function determines the ability of a new or evolved Pokémon
 function getAbility(pokemon, abilityNum) {
 	if (pokemon.match(/unown/g)) {
@@ -264,6 +283,7 @@ function getStats(pokemon, level, natureMultipliers) {
 	return stats;
 }
 
+
 // Description: Initiates X number of boxes in the player's PC
 function initiateNewBox(boxes) {
 	boxes.push({
@@ -300,6 +320,7 @@ function initiateNewBox(boxes) {
 	});
 	return boxes;
 }
+
 
 // Descrition: This function checks if a new Pokémon is shiny
 function isShiny() {
@@ -346,8 +367,9 @@ function upsertMoveset(pokemon, level, moveset, leveledUp) {
 	return moveset;
 }
 
+
 module.exports = {
-	expLookup, getAbility, getGender, getItem,
-	getNature, getStats, initiateNewBox, isShiny,
+	expLookup, fetchSetMoves, getAbility, getGender,
+	getItem, getNature, getStats, initiateNewBox, isShiny,
 	rng, upsertMoveset,
 };

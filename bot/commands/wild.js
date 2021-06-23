@@ -23,12 +23,10 @@ module.exports = {
 
 						// choose a numbers between 1-100 to determine the wild slot, held item chance, and evolution stage chance
 						const wildSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
-						console.log('wild seed: ' + wildSeed);
 						// const itemSeed = Math.floor(Math.random() * (100 - 1 + 1)) + (1 - 0);
 
 						// use the levelcalc function to determine the wild level of the pokemon
 						let wildLevel = await levelcalc(profile);
-						console.log(wildLevel);
 
 						// set wildpoke and default held item values
 						let wildpoke = null;
@@ -41,11 +39,9 @@ module.exports = {
 							wildCounter += wildSlot.probability;
 
 							if (wildSeed <= wildCounter) {
-								// console.log('wild counter: ' + wildCounter);
 								const stages = [];
 
 								for (const wildStage of wildSlot.pokemon) {
-									console.log(wildStage);
 									if ((wildLevel >= wildStage.minLvl || stages.length === 0) && (!wildStage.maxLvl || wildLevel <= wildStage.maxLvl || wildSlot.pokemon.length === 1)) {
 										if (minLvl > wildStage.minLvl) {
 											minLvl = wildStage.minLvl;
@@ -65,14 +61,12 @@ module.exports = {
 
 								const stageSeed = Math.floor(Math.random() * (stages.length - 1 + 1));
 								wildpoke = stages[stageSeed];
-								// console.log(stages);
 								break;
 							}
 						}
 
 						// create wild pokemon object and instance in database,
 						// along with opponent party array for accessing pokemon info in-battle
-						console.log(wildpoke);
 						let wildPokemon = genPokemon(wildpoke, '', wildLevel, profile._id, 'Wild');
 						wildPokemon = await Pokemon.create(wildPokemon);
 						console.log('New Pokémon assigned ID: ' + wildPokemon._id);

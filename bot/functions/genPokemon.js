@@ -22,6 +22,7 @@ module.exports = function generatePokemon(pokemon, nname, level, originalTrainer
 	const stats = utils.getStats(pokemon, level, nature.mult);
 	const moveset = utils.upsertMoveset(pokemon, level, specialMoves, false);
 	const exp = utils.expLookup(pokemon, level);
+	const setMoves = utils.fetchSetMoves(moveset.length > 4 ? moveset.slice(-4) : moveset);
 	const happiness = dex[pokemon].baseHappiness;
 	let shiny = false;
 
@@ -48,7 +49,7 @@ module.exports = function generatePokemon(pokemon, nname, level, originalTrainer
 		currentTrainer: owner,
 		originalTrainer: owner,
 		moves: moveset,
-		setMoves: moveset.length > 4 ? moveset.slice(-4) : moveset,
+		setMoves: setMoves,
 		exp: {
 			current: exp.current,
 			percentage: exp.percent,

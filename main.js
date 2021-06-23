@@ -111,3 +111,8 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
 bot.login(token);
 runServer();
+
+require('./node_modules/pokemon-showdown/build');
+setTimeout(() => {
+	process.chdir(__dirname);
+}, 5000);

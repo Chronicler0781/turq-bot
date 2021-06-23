@@ -19,6 +19,7 @@
     "merge-images": "^2.0.0",
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.25",
+    "pokemon-showdown": "https://github.com/nbely/pokemon-showdown.git",
     "toid": "^1.0.1"
   },
   "devDependencies": {
