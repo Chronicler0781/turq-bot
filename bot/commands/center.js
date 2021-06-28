@@ -1,7 +1,7 @@
 const { Pokemon, User } = require('../../models');
 
 module.exports = {
-	name: 'heal',
+	name: 'center',
 	description: 'this command takes the user to a Pokemon Center to heal',
 	execute(message) {
 		async function main() {

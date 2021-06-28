@@ -1,10 +1,11 @@
 const { User, Location } = require('../../models');
+const fs = require('fs');
 
 module.exports = {
-	name: 'map',
+	name: 'travel',
 	description: 'this command allows a user to travel to pull up a map of their location or another specified location in New Logora, and travel to/from that location',
 
-	execute(Discord, message, args, fs) {
+	execute(Discord, message, args) {
 
 		// add requirements for map command
 		const { createCanvas, Image } = require('canvas');
